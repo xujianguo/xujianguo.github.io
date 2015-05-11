@@ -1,0 +1,34 @@
+/*******************************************
+ @file:main.css
+ @author:ray_xujianguo
+ ******************************************/
+
+/*******************************************
+ Settings
+ ******************************************/
+@charset "utf-8"
+@-webkit-viewport   { width: device-width; }
+@-moz-viewport      { width: device-width; }
+@-ms-viewport       { width: device-width; }
+@-o-viewport        { width: device-width; }
+@viewport           { width: device-width; }
+
+/******************************************
+ Body
+ *****************************************/
+body {
+	font-family: 'Open Sans', Arial, Tahoma;
+	font-weight: 400;
+	font-size: lem;
+	color: #363636;
+	background: #ededed;
+}
+
+/******************************************
+ Container
+ *****************************************/
+.container {
+	margin-top: 80px;
+	margin-bottom: 15px;
+	background: #fff;
+}
