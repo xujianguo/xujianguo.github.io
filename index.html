@@ -181,8 +181,15 @@
 		    <!-- blog -->
 		    <div class="box">
 			  <h2>博客</h2>
-			  <div class="blog">
+			  <div>
 			    <button type="button" class="btn btn-primary">Go To View My Blog</button>
+			  </div>
+		    </div>
+		    <!-- github -->
+		    <div class="box">
+			  <h2>GitHub</h2>
+			  <div>
+			    <button type="button" class="btn btn-primary" onclick="goto()">Go To View My GitHub</button>
 			  </div>
 		    </div>
 		  </div>
@@ -190,6 +197,12 @@
 	  </div>
     <script src="js/jquery-1.8.3.js"></script>
     <script src="js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+		function goto()
+		{
+			window.location.href = 'https://github.com/xujianguo';
+		}
+	</script>
   </body>
 </html>
 
