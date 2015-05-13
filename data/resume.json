@@ -1,0 +1,29 @@
+{
+	"header" : "HELLO,<br>MY NAME IS <span>XuJianGuo</span> AND THIS IS MY RESUME",
+	"introduction" : {
+		"title" : "基本资料",
+		"content" : "我叫徐健国，来自广东工业大学，2016届毕业生，主修软件工程专业，本科学历，从大一下学期开始加入计算机学院TopView科研团队，在团队中负责Java后台开发。具有扎实的专业基础，丰富的项目经验，以及良好的团队合作意识。"
+	},
+	"price" : {
+		"title" : "获取情况",
+		"content" : {
+			"year1" : "2013.10",
+			"title1" : "广东工业大学优秀学生一等奖学金",
+			"description1" : "平均学分绩点3.89，专业排名第三",
+			"year2" : "2014.4",
+			"title2" : "广东省Java程序员竞赛三等奖",
+			"description2" : "广东省计算机协会组织的比赛，608支队伍参加，比赛中斩获三等奖",
+			"year3" : "2014.10",
+			"title3" : "广东工业大学优秀学生二等奖学金",
+			"description3" : "平均学分绩点3.76，专业排名第六",
+			"year4" : "2015.4",
+			"title4" : "蓝桥杯Java竞赛B组广东赛区三等奖",
+			"description4" : "全国性比赛，在广东赛区获得三等奖"
+		}
+	},
+	"experience" : {
+		
+	},
+	"name" : "xujianguo",
+	"age" : 21
+}
