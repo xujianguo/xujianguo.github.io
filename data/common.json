@@ -1,0 +1,8 @@
+{
+	"blog_type" : {
+		"type1" : "JavaSE(1)",
+		"type2" : "Python(1)",
+		"type3" : "MySQL优化(3)",
+		"type4" : "Oracle性能调优(4)"
+	}
+}
