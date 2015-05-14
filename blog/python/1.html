@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Blog of Ray Guo</title>
+	<link rel="icon" type="image/x-icon" href="https://assets-cdn.github.com/favicon.ico">
+	<link href="../../css/bootstrap.min.css" rel="stylesheet">
+	<link href="../../css/template.css" rel="stylesheet">
+	<link rel="stylesheet" href="../../highlight/styles/default.css">
+	<script src="../../highlight/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+  </head>
+  <body>
+	<div class="container">
+	  <div class="row">
+		  <div class="col-xs-12">
+		    <div id="photo-header" class="text-center">
+			  <div id="photo">
+			    <img src="../../picture/header.png" alt="avatar"/>
+			  </div>
+			  <div id="text-header">
+			    <h1>
+				  HELLO,<br>MY NAME IS <span>XuJianGuo</span> AND THIS IS MY BLOG
+				</h1>
+		      </div>
+          </div>
+	    </div>
+	  </div>
+	  <div class="row">
+	    <div class="col-xs-12 col-sm-9">
+			
+		  <div class="template">
+		    <h1>谈谈Queue同步队列的设计</h1>
+		  </div>
+		  
+		  <div class="template">
+		    <h2>什么是同步队列</h2>
+		    <p>同步队列是一个队列的数据结构，多个生产者往队列插入数据，多个消费者从队列获取数据，多个线程间互不干扰，不会产生线程安全问题。</p>
+		  </div>
+		  
+		  <div class="template">
+		    <h2>在同步队列中我们关心的问题</h2>
+		    <ol>
+		      <li>队列中的同步机制，在多个生产者同时添加数据的时候如何处理，在多个消费者获取数据的时候如何处理</li>
+		      <li>如何提供同步机制的效率，防止过多的阻塞</li>
+		      <li>各种状态下的处理算法</li>
+		    </ol>
+		  </div>
+		  
+		  <div class="template">
+		    <h2>粗看Python的同步队列</h2>
+		    <p>Python中在Queue模块中实现了几个同步队列的实现类，分别是Queue/LifoQueue/PriorityQueue，Queue都基类，LifoQueue和PriorityQueue都是继承于Queue，下面我们分别来看看这三个类各自的特点：
+		    </p>
+		    <p>																																
+			  <strong>Queue</strong>:它是一个FIFO队列,初始化一个maxsize作为队列的最大长度限制，如何达到了最大值，生产者线程就会阻塞，直到消费者线程消费后才允许插入，如果maxsize小于或者等于0，队列的容量就无限制了，下面简单介绍一些常用方法：
+			  <ol>
+			    <li>qsize:返回队列的长度</li>
+			    <li>empty:队列是否为空</li>
+			    <li>put:将元素放入队列中</li>
+			    <li>put_nowait:将元素放入队列中，如果需要等待就跑出异常</li>
+			    <li>get:从队列中获取元素并移除</li>
+			    <li>get_nowait:同理put_nowait</li>
+			    <li>task_done:通知队列元素的任务被执行完毕</li>
+			    <li>join:阻塞直到队列中所有元素被取出处理完毕</li>
+			  </ol>
+		    </p>
+		    <p>
+		      <strong>LifoQueue</strong>
+		      :它是一个LIFO队列，也就是一个栈的结构，其他的性质跟Queue一致
+		    </p>
+		    <p>
+		      <strong>PriorityQueue</strong>
+		      :它是一个优先队列，也就是一个栈的结构，其他的性质跟Queue一致
+		    </p>
+		    <p>
+		      <strong>使用示例</strong>
+		      :Productor生产数据放入queue中，Consumer从queue中消费数据，打印出来
+		      <pre><code class="python">
+#!/usr/bin/env python
+#-*- coding:utf-8 -*-
+
+import Queue
+import time
+import threading
+
+class Productor(threading.Thread):
+	def __init__(self, queue):
+		threading.Thread.__init__(self)
+		self.queue = queue
+
+	def run(self):
+		i = 0
+		print "productor:" , threading.current_thread()
+		while True:
+			try:
+				self.queue.put(threading.current_thread().getName()+" index:"+str(i))
+				i += 1
+				time.sleep(1)
+			except Exception, e:
+				print e
+				break
+
+class Consumer(threading.Thread):
+	def __init__(self, queue):
+		threading.Thread.__init__(self)
+		self.queue = queue
+
+	def run(self):
+		print "consumer:" , threading.current_thread()
+		while True:
+			try:
+				element = self.queue.get()
+				print threading.current_thread() , " get " + element
+				self.queue.task_done()
+				time.sleep(1)
+			except Exception, e:
+				print e
+				break
+
+queue = Queue.Queue(3)
+
+for i in range(5):
+	p = Productor(queue)
+	p.start()
+
+for j in range(10):
+	c = Consumer(queue)
+	c.start()
+
+queue.join()
+			  </code></pre>
+		    </p>
+		  </div>
+		  
+		  <div class="template">
+		    <h2>从源码看设计</h2>
+		    <p>我们首先看看Queue的构造方法初始化了什么：</p>
+		    <pre><code class="python">
+def __init__(self, maxsize=0):
+        self.maxsize = maxsize
+        self._init(maxsize)
+        self.mutex = _threading.Lock()
+        self.not_empty = _threading.Condition(self.mutex)
+        self.not_full = _threading.Condition(self.mutex)
+        self.all_tasks_done = _threading.Condition(self.mutex)
+        self.unfinished_tasks = 0
+		    </code></pre>
+		    <ol>
+			    <li>maxsize值的确定。这个maxsize对于一个同步队列的意义在于确定了队列的最大长度，达到最大的长度的时候，线程往队列里面插入元素的时候会产生阻塞。所以maxsize的值控制的好往往可以提供效率，过大的maxsize值会导致队列中的任务无法很快得到执行，容易产生超时，过小的maxsize值容易导致线程在提取元素的时候受到阻塞，浪费时间</li>
+			    <li>队列结构的确定。调用_init方法就是确定是FIFO队列，还是LIFO队列，或者是优先队列。不同的队列结构往往说明了对任务调度算法，FIFO队列对于任务的调度其实是一种先来先服务的思想，优先处理最先来的。LIFO队列就是最晚来的最先处理，可能是基于晚来的正在运行的需要立刻处理的任务。优先队列这个结构是基于任务的优先级，在队列中优先级最高（最低）优先得到处理，优先级说明了任务的重要性，也是操作系统常用的调度算法之一。</li>
+			    <li>同步锁的初始化。通过调用threading的Lock方法，返回了一个Lock对象，调用acquire获取锁，其他线程阻塞，调用release方法释放锁，其他线程可以争锁。对于Queue的这个锁，一旦被一个线程获取，其他线程都需要等待，所以在设计的时候我们也要考虑等待带来的时间负担。</li>
+			    <li>三个条件变量not_empty/not_full/all_tasks_done的初始化。条件变量的主要作用是进行线程通信，这三个变量的作用代表了三种状态，非空/非满/所有任务完成，之所以这样设计主要是进程具体状态的线程通信，针对not_empty来说，一个线程调用get方法，首先获取了该锁，进去后判断是否为空，如果是空的话那么这个线程就需要等待，只有当另外一个线程调用put方法后，然后唤醒在not_empty等待的线程，前一个线程才能继续往下走。</li>
+			    <li>未完成任务的计数。这个主要用于join方法等待所有任务执行完毕和task_done方法。</li>
+			</ol>
+			
+			<p>我们从get方法源代码看看这个Queue的工作流，其他方法也是遵循类似思路：</p>
+			<pre><code class="python">
+def get(self, block=True, timeout=None):
+	self.not_empty.acquire()
+	try:
+		if not block:
+			if not self._qsize():
+				raise Empty
+		elif timeout is None:
+			while not self._qsize():
+				self.not_empty.wait()
+		elif timeout < 0:
+			raise ValueError("'timeout' must be a non-negative number")
+		else:
+			endtime = _time() + timeout
+			while not self._qsize():
+				remaining = endtime - _time()
+				if remaining <= 0.0:
+					raise Empty
+				self.not_empty.wait(remaining)
+		item = self._get()
+		self.not_full.notify()
+		return item
+	finally:
+		self.not_empty.release()
+			</code></pre>
+			<p>调用get方法，Queue可能为空，所以要先获取not_empty条件变量上的锁。对于队列的get方法有两种，一种是非阻塞的，如果队列为空，就抛出异常，另外一种是阻塞的，如果队列为空，就调用wait方法等待，等待别的线程唤醒。如果非空，并且还没有超时，就获取对应元素，释放锁，返回，假如超时了，就抛出异常</p>
+			<p>我们这里只是看了get方法的源码，其他方法也是这样的思路。获取对应状态条件变量的锁或者直接获取锁，加锁后，进行业务工作，最后释放对应的锁。</p>
+		  </div>
+		  
+		  <div class="template">
+		    <h2>个人View</h2>
+		    <p>Python的同步队列我不认为已经到达了最好，个人表示还有挺多可以优化的地方，下面给出自己的一个设计方案（当中针对Python的Queue的不足点做出了优化）：</p>
+		    <ol>
+		      <li>动态maxsize。像我前面说的那样，maxsize的值对应程序的效率影响还是挺大的。如果给我设计的话，我会设计两种maxsize策略，一种是固定大小的maxsize，这样就满足了一个固定的需求。另外我会设计一个动态的maxsize，根据在同步锁上等待获取锁的队列长度动态增减maxsize的大小，达到用maxsize适应程序当前状态的效果。</li>
+		      <li>双重锁。一个读锁，一个写锁，像get和put方法必须使用写锁，一旦写锁被获取了，其他线程的任务操作都需要等待，如果读锁被获取了，另外一个线程也是读锁，就可以重入，例如qsize方法，因为对于不修改的方法，我们不应该对同类操作进行加锁等待，这样明显了增加了等待的时间。如果是请求写锁的话，就不给进入，线程读取到不可重复数据。</li>
+		      <li>状态条件变量。这个我认为Queue的三个状态条件变量还是足够解决问题的。</li>
+		    </ol>
+		  </div>
+		  
+	    </div>
+	    <div class="col-xs-12 col-sm-3">
+		  <div id="template-json" class="box clearfix">
+		    <h2>博文分类</h2>
+			  <a href="#" class="list-group-item">{{blog_type.type1}}</a>
+			  <a href="#" class="list-group-item">{{blog_type.type2}}</a>
+			  <a href="#" class="list-group-item">{{blog_type.type3}}</a>
+			  <a href="#" class="list-group-item">{{blog_type.type4}}</a>
+		  </div>
+	    </div>
+	  </div>
+	</div>
+    <script src="../../js/jquery-1.8.3.js"></script>
+    <script src="../../js/bootstrap.min.js"></script>
+    <script src="../../js/handlebars-v3.0.3.js"></script>
+    <script type="text/javascript">
+		
+		$(function() {
+            $.getJSON("https://xujianguo.github.io/data/common.json", function(result) {
+					var source   = $("#template-json").html();
+					var template = Handlebars.compile(source);
+					var html    = template(result);
+					$("#template-json").html(html);
+			});
+		});
+	</script>
+  </body>
+</html>

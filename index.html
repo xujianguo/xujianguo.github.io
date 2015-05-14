@@ -179,14 +179,14 @@
 		    <div class="box">
 			  <h2>{{blog.title}}</h2>
 			  <div>
-			    <button type="button" class="btn btn-primary">Go To View My Blog</button>
+			    <button type="button" class="btn btn-primary" onclick="goto_blog()">Go To View My Blog</button>
 			  </div>
 		    </div>
 		    <!-- github -->
 		    <div class="box">
 			  <h2>{{github.title}}</h2>
 			  <div>
-			    <button type="button" class="btn btn-primary" onclick="goto()">Go To View My GitHub</button>
+			    <button type="button" class="btn btn-primary" onclick="goto_github()">Go To View My GitHub</button>
 			  </div>
 		    </div>
 		  </div>
@@ -196,7 +196,12 @@
     <script src="js/bootstrap.min.js"></script>
     <script src="js/handlebars-v3.0.3.js"></script>
     <script type="text/javascript">
-		function goto()
+		function goto_blog()
+		{
+			window.location.href = 'blog.html';
+		}
+		
+		function goto_github()
 		{
 			window.location.href = 'https://github.com/xujianguo';
 		}

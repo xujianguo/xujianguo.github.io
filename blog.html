@@ -27,69 +27,20 @@
 	    <div class="col-xs-12 col-sm-9">
 			
 		  <div class="blogbox">
-		    <h2><a href="#">Python线程池的设计</a></h2>
-		    <p>异步线程池的作用就是统一进行线程调度，利用有限的线程处理系统中所有的异步任务。其实一个系统中的异步线程数量跟CPU的核数是有一定的关系，线程太多，容易浪费资源，而且各
-		        个线程之间的CPU调度，也不见得使性能提高，反而会对性能有一定的影响。
+		    <h2><a href="blog/python/1.html">谈谈Queue同步队列的设计</a></h2>
+		    <p>摘要：什么是同步队列？同步队列是一个队列的数据结构，多个生产者往队列插入数据，多个消费者从队列获取数据，多个线程间互不干扰，不会产生线程安全问题。在同步队列中我们关心的问题，队列中的同步机制，在多个生产者同时添加数据的时候如何处理，在多个消费者获取数据的时候如何处理，如何提供同步机制的效率，防止过多的阻塞，各种状态下的处理算法
 		    </p>   
-		    <sub>posted @ 2015-03-12 09:16</sub>
-		  </div>
-		  
-		  <div class="blogbox">
-		    <h2><a href="#">Python线程池的设计</a></h2>
-		    <p>异步线程池的作用就是统一进行线程调度，利用有限的线程处理系统中所有的异步任务。其实一个系统中的异步线程数量跟CPU的核数是有一定的关系，线程太多，容易浪费资源，而且各
-		        个线程之间的CPU调度，也不见得使性能提高，反而会对性能有一定的影响。
-		    </p>   
-		    <sub>posted @ 2015-03-12 09:16</sub>
-		  </div>
-		  
-		  <div class="blogbox">
-		    <h2><a href="#">Python线程池的设计</a></h2>
-		    <p>异步线程池的作用就是统一进行线程调度，利用有限的线程处理系统中所有的异步任务。其实一个系统中的异步线程数量跟CPU的核数是有一定的关系，线程太多，容易浪费资源，而且各
-		        个线程之间的CPU调度，也不见得使性能提高，反而会对性能有一定的影响。
-		    </p>   
-		    <sub>posted @ 2015-03-12 09:16</sub>
-		  </div>
-		  
-		  <div class="blogbox">
-		    <h2><a href="#">Python线程池的设计</a></h2>
-		    <p>异步线程池的作用就是统一进行线程调度，利用有限的线程处理系统中所有的异步任务。其实一个系统中的异步线程数量跟CPU的核数是有一定的关系，线程太多，容易浪费资源，而且各
-		        个线程之间的CPU调度，也不见得使性能提高，反而会对性能有一定的影响。
-		    </p>   
-		    <sub>posted @ 2015-03-12 09:16</sub>
-		  </div>
-		  
-		  <div class="blogbox">
-		    <h2><a href="#">Python线程池的设计</a></h2>
-		    <p>异步线程池的作用就是统一进行线程调度，利用有限的线程处理系统中所有的异步任务。其实一个系统中的异步线程数量跟CPU的核数是有一定的关系，线程太多，容易浪费资源，而且各
-		        个线程之间的CPU调度，也不见得使性能提高，反而会对性能有一定的影响。
-		    </p>   
-		    <sub>posted @ 2015-03-12 09:16</sub>
-		  </div>
-		  
-		  <div class="blogbox">
-		    <h2><a href="#">Python线程池的设计</a></h2>
-		    <p>异步线程池的作用就是统一进行线程调度，利用有限的线程处理系统中所有的异步任务。其实一个系统中的异步线程数量跟CPU的核数是有一定的关系，线程太多，容易浪费资源，而且各
-		        个线程之间的CPU调度，也不见得使性能提高，反而会对性能有一定的影响。
-		    </p>   
-		    <sub>posted @ 2015-03-12 09:16</sub>
-		  </div>
-		  
-		  <div class="blogbox">
-		    <h2><a href="#">Python线程池的设计</a></h2>
-		    <p>异步线程池的作用就是统一进行线程调度，利用有限的线程处理系统中所有的异步任务。其实一个系统中的异步线程数量跟CPU的核数是有一定的关系，线程太多，容易浪费资源，而且各
-		        个线程之间的CPU调度，也不见得使性能提高，反而会对性能有一定的影响。
-		    </p>   
-		    <sub>posted @ 2015-03-12 09:16</sub>
-		  </div>
-					  
+		    <sub>posted @ 2015-05-14 22:00</sub>
+		  </div>  
+		  		  
 	    </div>
 	    <div class="col-xs-12 col-sm-3">
-		  <div class="box clearfix">
+		  <div id="template-json" class="box clearfix">
 		    <h2>博文分类</h2>
-			  <a href="#" class="list-group-item">JavaSE(1)</a>
-			  <a href="#" class="list-group-item">Python(1)</a>
-			  <a href="#" class="list-group-item">MySQL优化(3)</a>
-			  <a href="#" class="list-group-item">Oracle性能调优(4)</a>
+			  <a href="#" class="list-group-item">{{blog_type.type1}}</a>
+			  <a href="#" class="list-group-item">{{blog_type.type2}}</a>
+			  <a href="#" class="list-group-item">{{blog_type.type3}}</a>
+			  <a href="#" class="list-group-item">{{blog_type.type4}}</a>
 		  </div>
 	    </div>
 	  </div>
@@ -97,5 +48,16 @@
     <script src="js/jquery-1.8.3.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/handlebars-v3.0.3.js"></script>
+    <script type="text/javascript">
+		
+		$(function() {
+            $.getJSON("https://xujianguo.github.io/data/common.json", function(result) {
+					var source   = $("#template-json").html();
+					var template = Handlebars.compile(source);
+					var html    = template(result);
+					$("#template-json").html(html);
+			});
+		});
+	</script>
   </body>
 </html>
