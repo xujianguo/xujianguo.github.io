@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Blog of Ray Guo</title>
+	<link rel="icon" type="image/x-icon" href="https://assets-cdn.github.com/favicon.ico">
+	<link href="../../css/bootstrap.min.css" rel="stylesheet">
+	<link href="../../css/template.css" rel="stylesheet">
+	<link rel="stylesheet" href="../../highlight/styles/default.css">
+	<script src="../../highlight/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+  </head>
+  <body>
+	<div class="container">
+	  <div class="row">
+		  <div class="col-xs-12">
+		    <div id="photo-header" class="text-center">
+			  <div id="photo">
+			    <img src="../../picture/header.png" alt="avatar"/>
+			  </div>
+			  <div id="text-header">
+			    <h1>
+				  HELLO,<br>MY NAME IS <span>XuJianGuo</span> AND THIS IS MY BLOG
+				</h1>
+		      </div>
+          </div>
+	    </div>
+	  </div>
+	  <div class="row">
+	    <div class="col-xs-12 col-sm-9">
+			
+		  <div class="template">
+		    <h1>Java集合大家族</h1>
+		  </div>
+		  
+		  <div class="template">
+		    <h2>各类之间的关系</h2>
+		    <p>下面给出一幅关系图，实线边框的是实现类，比如ArrayList，LinkedList，HashMap等，折线边框的是抽象类，比如AbstractCollection，AbstractList，AbstractMap等，而点线边框的是接口，比如Collection，Iterator，List等，读者们认真阅读一下，大致了解一下各类的关系，对整个来个大概的把握。</p>
+		    <img src="../../picture/blog-java-1-1.gif"/>
+		  </div>
+		  
+		  <div class="template">
+		    <h2>对List的选择</h2>
+		    <p>在实际项目中，什么情况下选择什么List对我们的程序的质量有着明显改变，在讨论怎么选择之前，我想有必要了解一下各种List的特点及其内部实现结构，这往往能给我们更好的判断。</p>
+
+		  </div>
+		  
+	    </div>
+	    <div class="col-xs-12 col-sm-3">
+		  <div id="template-json" class="box clearfix">
+		    <h2>博文分类</h2>
+			  <a href="#" class="list-group-item">{{blog_type.type1}}</a>
+			  <a href="#" class="list-group-item">{{blog_type.type2}}</a>
+			  <a href="#" class="list-group-item">{{blog_type.type3}}</a>
+			  <a href="#" class="list-group-item">{{blog_type.type4}}</a>
+		  </div>
+	    </div>
+	  </div>
+	</div>
+    <script src="../../js/jquery-1.8.3.js"></script>
+    <script src="../../js/bootstrap.min.js"></script>
+    <script src="../../js/handlebars-v3.0.3.js"></script>
+    <script type="text/javascript">
+		
+		$(function() {
+            $.getJSON("https://xujianguo.github.io/data/common.json", function(result) {
+					var source   = $("#template-json").html();
+					var template = Handlebars.compile(source);
+					var html    = template(result);
+					$("#template-json").html(html);
+			});
+		});
+	</script>
+  </body>
+</html>
