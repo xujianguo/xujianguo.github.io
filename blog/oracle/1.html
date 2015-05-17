@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Blog of Ray Guo</title>
+	<link rel="icon" type="image/x-icon" href="https://assets-cdn.github.com/favicon.ico">
+	<link href="../../css/bootstrap.min.css" rel="stylesheet">
+	<link href="../../css/template.css" rel="stylesheet">
+	<link rel="stylesheet" href="../../highlight/styles/default.css">
+	<script src="../../highlight/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+  </head>
+  <body>
+	<div class="container">
+	  <div class="row">
+		  <div class="col-xs-12">
+		    <div id="photo-header" class="text-center">
+			  <div id="photo">
+			    <img src="../../picture/header.png" alt="avatar"/>
+			  </div>
+			  <div id="text-header">
+			    <h1>
+				  HELLO,<br>MY NAME IS <span>XuJianGuo</span> AND THIS IS MY BLOG
+				</h1>
+		      </div>
+          </div>
+	    </div>
+	  </div>
+	  <div class="row">
+	    <div class="col-xs-12 col-sm-9">
+			
+		  <div class="template">
+		    <h1>Count(*)和Count(列)谁快谁慢</h1>
+		  </div>
+		  
+		  <div class="template">
+		    <h2>常见假象</h2>
+		    <p>我们来看看我们经常性遇到的一种假象：</p>
+		    <p>首先设置一下环境：</p>
+		    <pre><code class="sql">
+--显示运行的时间
+set timing on
+--每行显示字符数 
+set linesize 1000
+--显示执行计划
+set autotrace on 
+		    </code></pre>
+		    <p>创建表：</p>
+		    <pre><code class="sql">
+--dba_objects表的基础上创建表
+create table t as select * from dba_objects;
+--添加一列，用来跟count(*)比较
+update t set object_id = rownum;
+		    </code></pre>
+		    <p>两者的执行情况如下：</p>
+		    <pre><code class="sql">
+SQL> select count(*) from t;
+
+  COUNT(*)
+----------
+     50317
+
+Elapsed: 00:00:00.04
+
+Execution Plan
+----------------------------------------------------------
+Plan hash value: 2966233522
+
+-------------------------------------------------------------------
+| Id  | Operation          | Name | Rows  | Cost (%CPU)| Time     |
+-------------------------------------------------------------------
+|   0 | SELECT STATEMENT   |      |     1 |   158   (1)| 00:00:02 |
+|   1 |  SORT AGGREGATE    |      |     1 |            |          |
+|   2 |   TABLE ACCESS FULL| T    | 45222 |   158   (1)| 00:00:02 |
+-------------------------------------------------------------------
+
+SQL> select count(object_id) from t;
+
+COUNT(OBJECT_ID)
+----------------
+           50317
+
+Elapsed: 00:00:00.02
+
+Execution Plan
+----------------------------------------------------------
+Plan hash value: 2966233522
+
+---------------------------------------------------------------------------
+| Id  | Operation          | Name | Rows  | Bytes | Cost (%CPU)| Time     |
+---------------------------------------------------------------------------
+|   0 | SELECT STATEMENT   |      |     1 |    13 |   159   (2)| 00:00:02 |
+|   1 |  SORT AGGREGATE    |      |     1 |    13 |            |          |
+|   2 |   TABLE ACCESS FULL| T    | 45222 |   574K|   159   (2)| 00:00:02 |
+---------------------------------------------------------------------------
+		    </code></pre>
+		    <p>从查询计划中我们看到两种方法对CPU的消耗都差不多，从这里可以看出Count(*)跟Count(列)的速度大致一样？其实不然，请看下面。</p>
+		  </div>
+		  
+		  <div class="template">
+		    <h2>真相</h2>
+		    <p>创建一个包含25字段的表：</p>
+		    <pre><code class="sql">
+SET SERVEROUTPUT ON
+SET ECHO ON
+---构造出有25个字段的表T
+DROP TABLE t;
+DECLARE
+  l_sql VARCHAR2(32767);
+BEGIN
+  l_sql := 'CREATE TABLE t (';
+  FOR i IN 1..25 
+  LOOP
+    l_sql := l_sql || 'n' || i || ' NUMBER,';
+  END LOOP;
+  l_sql := l_sql || 'pad VARCHAR2(1000)) PCTFREE 10';
+  EXECUTE IMMEDIATE l_sql;
+END;
+/
+		    </code></pre>
+		    <p>数据填充：</p>
+		    <pre><code class="sql">
+----将记录还有这个表T中填充
+DECLARE
+  l_sql VARCHAR2(32767);
+BEGIN
+  l_sql := 'INSERT INTO t SELECT ';
+  FOR i IN 1..25
+  LOOP
+    l_sql := l_sql || '0,';
+  END LOOP;
+  l_sql := l_sql || 'NULL FROM dual CONNECT BY level <= 10000';
+  EXECUTE IMMEDIATE l_sql;
+  COMMIT;
+END;
+/
+		    </code></pre>
+		    <p>执行下面这个脚本，对count(*)执行1000遍取平均时间，然后对count(每个列)执行1000遍取平均时间：</p>
+		    <pre><code class="sql">
+--验证脚本（一次访问该表各字段验证） 
+execute dbms_stats.gather_table_stats(ownname=>user, tabname=>'t')
+SELECT num_rows, blocks FROM user_tables WHERE table_name = 'T';
+--以下动作观察执行速度，比较发现COUNT(*)最快，COUNT(最大列）最慢
+DECLARE
+  l_dummy PLS_INTEGER;
+  l_start PLS_INTEGER;
+  l_stop PLS_INTEGER;
+  l_sql VARCHAR2(100);
+BEGIN
+  l_start := dbms_utility.get_time;
+  FOR j IN 1..1000
+  LOOP
+    EXECUTE IMMEDIATE 'SELECT count(*) FROM t' INTO l_dummy;
+  END LOOP;
+  l_stop := dbms_utility.get_time;
+  dbms_output.put_line((l_stop-l_start)/100);
+
+  FOR i IN 1..25
+  LOOP
+    l_sql := 'SELECT count(n' || i || ') FROM t';
+    l_start := dbms_utility.get_time;
+    FOR j IN 1..1000
+    LOOP
+      EXECUTE IMMEDIATE l_sql INTO l_dummy;
+    END LOOP;
+    l_stop := dbms_utility.get_time;
+    dbms_output.put_line((l_stop-l_start)/100);
+  END LOOP;
+END;
+/
+		    </code></pre>
+		    <p>结果为：</p>
+		    <pre><code class="sql">
+.25
+.35
+.35
+.37
+.37
+.38
+.39
+.41
+.43
+.45
+.47
+.49
+.51
+.54
+.56
+.59
+.63
+.67
+.68
+.72
+.74
+.77
+.78
+.82
+.85
+.87
+		    </code></pre>
+		    <p>没错，第一行就是count(*)的执行时间，依次是count(第1列)到count(第25列)的执行时间，我们可以发现他们是依次递增的，虽然说不是线性递增的，但是是明显的向上增长的趋势。</p>
+			<p>所以，我们可以得出：<strong>count(*)的速度是最快的，列的偏移量决定了性能，列越往后，开销越大。</strong></p>
+		  </div>
+		  
+	    </div>
+	    <div class="col-xs-12 col-sm-3">
+		  <div id="template-json" class="box clearfix">
+		    <h2>博文分类</h2>
+			  <a href="#" class="list-group-item">{{blog_type.type1}}</a>
+			  <a href="#" class="list-group-item">{{blog_type.type2}}</a>
+			  <a href="#" class="list-group-item">{{blog_type.type3}}</a>
+			  <a href="#" class="list-group-item">{{blog_type.type4}}</a>
+		  </div>
+	    </div>
+	  </div>
+	</div>
+    <script src="../../js/jquery-1.8.3.js"></script>
+    <script src="../../js/bootstrap.min.js"></script>
+    <script src="../../js/handlebars-v3.0.3.js"></script>
+    <script type="text/javascript">
+		
+		$(function() {
+            $.getJSON("https://xujianguo.github.io/data/common.json", function(result) {
+					var source   = $("#template-json").html();
+					var template = Handlebars.compile(source);
+					var html    = template(result);
+					$("#template-json").html(html);
+			});
+		});
+	</script>
+  </body>
+</html>
