@@ -108,7 +108,258 @@ public class CglibProxyDemo {
 		    <img src="../../picture/blog-java-1-2.gif"/>
 		    <p><strong>2.存储过程。</strong>当我们调用put方法的时候，传入key和value，HashMap首先会计算key的hash值，hash值跟数组大小求余得到索引，就找到对应的数组元素Entry，然后就可以得到一条链表了，顺着这条链表看看有木有跟key的值相等的，有的话就替换新的value，没有的话就构建一个新的Entry插入链表中。</p>
 		    <p><strong>3.初始容量和加载因子。</strong>容量是哈希表中桶的数量，初始容量只是哈希表在创建时的容量。加载因子是哈希表在其容量自动增加之前可以达到多满的一种尺度。当哈希表中的条目数超出了加载因子与当前容量的乘积时，则要对该哈希表进行rehash操作（即重建内部数据结构），从而哈希表将具有大约两倍的桶数。</p>
-		    <p><strong>4.线程安全问题。HashMap是线程不安全的，而HashTable就是线程安全的。</strong></p>
+		    <p><strong>4.线程安全问题。</strong>HashMap是线程不安全的，而HashTable就是线程安全的。</p>
+		    <hr/>
+		    <p><strong>LinkedHashMap:</strong>基于哈希表和链表的Map接口的实现，继承了HashMap，通过添加Entry类的属性来实现双向链表，维护插入的顺序。</p>
+		    <p><strong>1.存储数据结构。</strong>在哈希表的基础上，为Entry添加了before和after属性，使得哈希表上的节点都直到自己前后插入节点是谁，从而维护了插入顺序。</p>
+		    <p><strong>2.具有LRU特性。</strong>LRU就是一种近期最少使用算法，就是找到最老的那个。在HashMap中，我们是无法标识一个最老的元素。但是在LinkedHashMap中维护了插入的顺序，在链表中的第一个节点就是最老的元素了，这样就很容易实现这个算法，下面我们给出一个LRU缓存的实现：</p>
+		    <pre><code class="java">
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * 基于LinkedHashMap实现LRU缓存
+ * 
+ * @author xujianguo
+ * @email ray_xujianguo@yeah.net
+ * @time 2015年5月17日
+ */
+public class LRUCache<K, V> {
+	// 缓存最大容量
+	private final int maxCacheSize;
+	// 默认的负载因子
+	private final float defaultFactor = 0.75f;
+	// 缓存
+	private LinkedHashMap<K, V> cache;
+
+	public LRUCache(int initSize) {
+		maxCacheSize = initSize;
+		// 保证不触发rehash
+		int capacity = (int) Math.ceil(maxCacheSize / defaultFactor) + 1;
+		cache = new LinkedHashMap<K, V>(capacity, defaultFactor, true) {
+			// 在容量超过执行大小的时候就移出最老的元素
+			@Override
+			protected boolean removeEldestEntry(java.util.Map.Entry<K, V> eldest) {
+				return size() > maxCacheSize;
+			}
+		};
+	}
+
+	public synchronized void put(K key, V value) {
+		cache.put(key, value);
+	}
+
+	public synchronized V get(K key) {
+		return cache.get(key);
+	}
+
+	public synchronized V remove(K key) {
+		return cache.remove(key);
+	}
+
+	public synchronized Set<Map.Entry<K, V>> getAll() {
+		return cache.entrySet();
+	}
+
+	public synchronized int size() {
+		return cache.size();
+	}
+
+	public synchronized void clear() {
+		cache.clear();
+	}
+}
+		    </code></pre>
+		    <hr/>
+		    <p><strong>Hashtable:</strong>HashMap的一个线程安全的版本。</p>
+		    <hr/>
+		    <p><strong>IdentityHashMap:</strong>这个是一个比较特殊的Map，HashMap比较key的时候是调用equals方法，而IdentityHashMap是通过==判断key的相等。在一般的情况下我们是用不到的，但是有些情况下就必须使用这个特性，如vm中的所有对象都是独一无二的，哪怕两个对象是同一个class的对象，而且两个对象的数据完全相同，对于jvm来说，他们也是完全不同的，如果要用一个map来记录这样jvm中的对象，你就需要用IdentityHashMap，而不能使用其他Map实现。下面来个example理解一下：</p>
+			<pre><code class="java">
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
+
+class Person {
+	private String name;
+	private int age;
+	
+	public Person(String name, int age) {
+		this.name = name;
+		this.age = age;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof Person) {
+			Person target = (Person)obj;
+			if(name.equals(target.name) && age == target.age) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false; 
+		}
+	}
+	
+	@Override
+	public int hashCode() {
+		return name.hashCode() + age;
+	}
+
+	@Override
+	public String toString() {
+		return name + " : " + age;
+	}
+}
+
+public class IdentiyHashMapDemo {
+	public static void main(String[] args) {
+		Person person1 = new Person("xujianguo", 22);
+		Person person2 = new Person("xujianguo", 22);
+		
+		System.out.println(person1 == person2);
+		
+		Map<Person, Boolean> map = new HashMap<Person, Boolean>(); 
+		map.put(person1, true);
+		map.put(person2, true);
+		System.out.println(map);	//{xujianguo : 22=true}
+		
+		Map<Person, Boolean> lmap = new IdentityHashMap<Person, Boolean>(); 
+		lmap.put(person1, true);
+		lmap.put(person2, true);
+		System.out.println(lmap);	//{xujianguo : 22=true, xujianguo : 22=true}
+	}
+}
+			</code></pre>
+			<hr/>
+			<p><strong>WeakHashMap:</strong>以弱键实现的基于哈希表的Map。在WeakHashMap中，当某个键不再正常使用时，将自动移除其条目。更精确地说，对于一个给定的键，其映射的存在并不阻止垃圾回收器对该键的丢弃，这就使该键成为可终止的，被终止，然后被回收。丢弃某个键时，其条目从映射中有效地移除，因此，该类的行为与其他的Map实现有所不同。</p>
+			<pre><code class="java">
+import java.util.Map;
+import java.util.WeakHashMap;
+
+class Element {
+	private String id;
+	
+	public Element(String id) { 
+		this.id = id; 
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return obj instanceof Element && id.equals(((Element)obj).id);
+	}
+	
+	@Override
+	public int hashCode() {
+		return id.hashCode();
+	}
+	
+	@Override
+	public String toString() {
+		return id; 
+	}
+	
+	@Override
+	protected void finalize() throws Throwable {
+		System.out.println("finalize " + getClass().getSimpleName() + " id=" + id);
+	}
+}
+
+class Key extends Element {
+	public Key(String id) {
+		super(id);
+	}
+}
+
+class Value extends Element {
+	public Value(String id) {
+		super(id);
+	}
+}
+
+public class WeakHashMapDemo {
+	public static void main(String[] args) {
+		int size = 1000000;
+		Key[] keys = new Key[size];
+		Map<Key, Value> map = new WeakHashMap<Key, Value>();
+		for(int i = 0; i < size; i++) {
+			Key key = new Key(Integer.toString(i));
+			Value value = new Value(Integer.toString(i));
+			if(i % 3 == 0)
+				//被keys数组引用着的对象不会被回收
+				keys[i] = key;
+			map.put(key, value);
+		}
+		System.gc();
+	}
+}
+			</code></pre>
+			<p>其实WeakHashMap可以理解为一种节约存储空间的技术，将引用存储进WeakHashMap后被包装成WeakReference，进来gc的时候允许垃圾回收器自动清理。</p>
+			<hr/>
+			<p><strong>EnumMap:</strong>与枚举类型键一起使用的专用Map实现。枚举映射中所有键都必须来自单个枚举类型，该枚举类型在创建映射时显式或隐式地指定。它的存储结构就是用两个数组，一个存储keys，一个存储values，不用做什么哈希的处理，简洁很多。</p>
+			<hr/>
+			<p><strong>TreeMap:</strong>基于红黑树的实现，查看键值队时，它们会被排序，排序的次序由Comparator决定。TreeMap的特点在于，所得到的结果是经过排序的。</p>
+			<pre><code class="java">
+import java.util.Comparator;
+import java.util.Map;
+import java.util.TreeMap;
+
+class Node {
+	private int id;
+	
+	public Node(int id) {
+		this.id = id;
+	}
+	
+	public int getId() {
+		return id;
+	}
+	
+	public String toString() {
+		return "node" + id;
+	}
+}
+
+class NodeComparator implements Comparator<Node> {
+	@Override
+	public int compare(Node o1, Node o2) {
+		if(o1.getId() > o2.getId()) {
+			return 1;
+		} else if(o1.getId() < o2.getId()) {
+			return -1;
+		}
+		return 0;
+	}
+}
+
+public class TreeMapDemo {
+	public static void main(String[] args) {
+		Node node1 = new Node(2);
+		Node node2 = new Node(6);
+		Node node3 = new Node(3);
+		
+		NodeComparator comparator = new NodeComparator();
+		Map<Node, String> map = new TreeMap<Node, String>(comparator);
+		map.put(node1, "a");
+		map.put(node2, "b");
+		map.put(node3, "c");
+		
+		System.out.println(map);	//{node2=a, node3=c, node6=b}
+	}
+}
+			</code></pre>
+		  </div>
+		  
+		  <div class="template">
+		    <h2>对Set的选择</h2>
+		    <p>一个不包含重复元素的collection。更确切地讲，set不包含满足e1.equals(e2)的元素对e1和e2，并且最多包含一个null元素。</p>
+		    <hr/>
+		    <p><strong>HashSet:</strong>类中维护了一个HashMap，也就是说HashSet其实就是HashMap的key值。我们通常调用HashSet的方法实际上都是在调用HashMap的方法。</p>
+		    <hr/>
+		    <p><strong>LinkedHashSet:</strong>根据元素的hashCode值来决定元素的存储位置，但是它同时使用链表维护元素的次序。这样使得元素看起来像是以插入顺序保存的，也就是说，当遍历该集合时候，LinkedHashSet将会以元素的添加顺序访问集合的元素。</p>
+		    <p><strong>TreeSet:</strong>SortedSet接口的唯一实现类，TreeSet可以确保集合元素处于排序状态。</p>
 		  </div>
 		  
 	    </div>
