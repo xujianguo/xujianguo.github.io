@@ -14,7 +14,7 @@
 			"outlook" : "摘要：面给出一幅关系图，实线边框的是实现类，比如ArrayList，LinkedList，HashMap等，折线边框的是抽象类，比如AbstractCollection，AbstractList，AbstractMap等，而点线边框的是接口，比如Collection，Iterator，List等，读者们认真阅读一下，大致了解一下各类的关系，对整个来个大概的把握.在实际项目中，什么情况下选择什么List对我们的程序的质量有着明显改变，在讨论怎么选择之前，我想有必要了解一下各种List的特点及其内部实现结构，这往往能给我们更好的判断。",
 			"time" : "posted @ 2015-05-15 14:12"
 		}
-	]
+	],
 	"oracle" : [
 		{
 			"address" : "blog/oracle/1.html",
