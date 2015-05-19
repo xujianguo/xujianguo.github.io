@@ -15,20 +15,42 @@ $(function() {
 				+ target[i].id + "'" + ')">' + target[i].content + '(' + target_array.length + ")" + '</a>';
 		}
 		$("#template-json").html(content);
-		getDirectory(target[0].id);
+		var strs = window.location.pathname.split("/");
+		var current_page = strs[strs.length-1];
+		if(current_page == 'blog.html') {
+			var pid = getQueryString("id");
+			if(pid) {
+				getDirectory(pid);
+			} else {
+				getDirectory(target[0].id);
+			}
+		}
 	});
 });
 
 function getDirectory(type) {
-	var target = eval('blog_directory.' + type);
-	console.info(target);
-	var content = "";
-	for(var i = 0; i < target.length; i++) {
-		content += 
-		  '<div class="blogbox"><h2><a href="' + target[i].address + '">' 
-		  + target[i].title + '</a></h2><p>' + target[i].outlook + '</p><sub>' + target[i].time + '</sub></div>';
+	var strs = window.location.pathname.split("/");
+	var current_page = strs[strs.length-1];
+	if(current_page != 'blog.html') {
+		window.location.href = '../../blog.html?' + "id=" + type;
+	} else {
+		var target = eval('blog_directory.' + type);
+		var content = "";
+		for(var i = 0; i < target.length; i++) {
+			content += 
+			  '<div class="blogbox"><h2><a href="' + target[i].address + '">' 
+			  + target[i].title + '</a></h2><p>' + target[i].outlook + '</p><sub>' + target[i].time + '</sub></div>';
+		}
+		$("#directory").html(content);	
 	}
-	$("#directory").html(content);
 }
+
+function getQueryString(name) { 
+	var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i"); 
+	var r = window.location.search.substr(1).match(reg); 
+	if (r != null) 
+		return unescape(r[2]); 
+	return null; 
+} 
 
 
