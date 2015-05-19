@@ -365,11 +365,6 @@ public class TreeMapDemo {
 	    </div>
 	    <div class="col-xs-12 col-sm-3">
 		  <div id="template-json" class="box clearfix">
-		    <h2>博文分类</h2>
-			  <a href="#" class="list-group-item">{{blog_type.type1}}</a>
-			  <a href="#" class="list-group-item">{{blog_type.type2}}</a>
-			  <a href="#" class="list-group-item">{{blog_type.type3}}</a>
-			  <a href="#" class="list-group-item">{{blog_type.type4}}</a>
 		  </div>
 	    </div>
 	  </div>
@@ -377,16 +372,6 @@ public class TreeMapDemo {
     <script src="../../js/jquery-1.8.3.js"></script>
     <script src="../../js/bootstrap.min.js"></script>
     <script src="../../js/handlebars-v3.0.3.js"></script>
-    <script type="text/javascript">
-		
-		$(function() {
-            $.getJSON("https://xujianguo.github.io/data/common.json", function(result) {
-					var source   = $("#template-json").html();
-					var template = Handlebars.compile(source);
-					var html    = template(result);
-					$("#template-json").html(html);
-			});
-		});
-	</script>
+    <script src="../../js/show_directory.js"></script>
   </body>
 </html>
