@@ -7,7 +7,7 @@
 			"time" : "posted @ 2015-05-14 22:00"
 		}
 	],
-	"java" : [
+	"javase" : [
 		{
 			"address" : "blog/java/1.html",
 			"title" : "谈Java集合大家族",
