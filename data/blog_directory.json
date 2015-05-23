@@ -13,6 +13,12 @@
 			"title" : "谈Java集合大家族",
 			"outlook" : "摘要：面给出一幅关系图，实线边框的是实现类，比如ArrayList，LinkedList，HashMap等，折线边框的是抽象类，比如AbstractCollection，AbstractList，AbstractMap等，而点线边框的是接口，比如Collection，Iterator，List等，读者们认真阅读一下，大致了解一下各类的关系，对整个来个大概的把握.在实际项目中，什么情况下选择什么List对我们的程序的质量有着明显改变，在讨论怎么选择之前，我想有必要了解一下各种List的特点及其内部实现结构，这往往能给我们更好的判断......",
 			"time" : "posted @ 2015-05-15 14:12"
+		},
+		{
+			"address" : "blog/java/2.html",
+			"title" : "从JVM层面理解volatile",
+			"outlook" : "摘要：Java主存与工作内存，分析volatile之前有必要讲下Java中线程是怎么与主存进行交互的，首先看下图，这个工作内存是跟线程相关联的，就是说每个线程都是专属于自己的工作内存，工作内存中保存了该线程使用到的变量的主内存的副本拷贝，线程对变量的所有操作都必须在工作内存中进行，不能直接读取主内存中的变量。工作内存和主内存之间都有一些原子操作来实现变量的存取，从工作内存到主内存的，从主内存到工作内存的，从而实现了两者之间的交互。下面列出8种操作......",
+			"time" : "posted @ 2015-05-23 23:22"
 		}
 	],
 	"oracle" : [
@@ -25,13 +31,13 @@
 		{
 			"address" : "blog/oracle/2.html",
 			"title" : "Oracle体系结构",
-			"outlook" : "个人觉得面试的时候如果有人问你Oracle的时候，多多少少都会涉及到它的体系结构，就像问你JVM，就会涉及到内存模型一样。所以这里总体一下，从整体把握去叙说整个结构，理清了结构体系，对一些深入的点才能有深刻的体会......",
+			"outlook" : "摘要：个人觉得面试的时候如果有人问你Oracle的时候，多多少少都会涉及到它的体系结构，就像问你JVM，就会涉及到内存模型一样。所以这里总体一下，从整体把握去叙说整个结构，理清了结构体系，对一些深入的点才能有深刻的体会......",
 			"time" : "posted @ 2015-05-20 17:31"
 		},
 		{
 			"address" : "blog/oracle/3.html",
 			"title" : "通过绑定变量实现SQL共享",
-			"outlook" : "Shared Pool的三大区域。SQL的解析跟Shared Pool有莫大的关系，在这里我先说一下Shared Pool里面的三大区域，有助于下面的理解。Library Cache。我们都知道SQL解析成执行计划后，会将SQL和执行计划缓存到Shared Pool中，具体就是缓存到这个Library Cache中。Free Memory。从名字我们知道这是一个未......",
+			"outlook" : "摘要：Shared Pool的三大区域。SQL的解析跟Shared Pool有莫大的关系，在这里我先说一下Shared Pool里面的三大区域，有助于下面的理解。Library Cache。我们都知道SQL解析成执行计划后，会将SQL和执行计划缓存到Shared Pool中，具体就是缓存到这个Library Cache中。Free Memory。从名字我们知道这是一个未......",
 		    "time" : "posted @ 2015-05-20 20:21"
 		}
 	]
