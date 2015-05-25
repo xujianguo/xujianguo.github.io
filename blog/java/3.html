@@ -265,6 +265,15 @@ class ReentranLockDemo {
 		    </code></pre>
 		  </div>
 		  
+		  <div class="template">
+		    <h2>比较</h2>
+		    <p>synchronized和ReentranLock，一个是原生语法层面的互斥锁，一个是API层面的互斥锁，两个各种千秋，从上面原理的分析我们似乎页看到了点什么，我们从下面几个方面讨论一下：</p>
+		    <p><strong>可控性。</strong>对于synchronized，它的语法实现是在JVM中，我们在外部只是简单的使用这个关键字，无法对它控制什么，更多无法获取到一些线程的信息。ReentranLock是Java实现的，而且它提供给我们很多额外的信息，如当前线程保持此锁的次数，正等待获取此锁的线程的集合，查询当前线程是否保持此锁等等，所以ReentranLock对于我们是可控许多的。但是如果你不关心这些的话，synchronized是你代码最好理解的选择。</p>
+		    <p><strong>锁的类型。</strong>synchronized只提供非公平锁，当然也没有提供不提供的，它都是自己内容实现的。对于ReentranLock来说，在构造方法的时候就提供了给我们选择的权利，可以选择公平锁和非公平锁。两种锁最大的区别就是有没有抢占使用锁。</p>
+		    <p><strong>等待可中断。</strong>所谓的等待可中断就是持有锁的线程长期不释放锁的时候，正在等待的线程可以选择放弃等待，改为处理其他事情。对不起，又是ReentranLock，是的，它提供。</p>
+		    <p><strong>条件绑定。</strong>一个ReentranLock对象可以同时绑定多个Condition对象，而在synchronized中，锁的对象的wait方法和notify方法可以实现一个隐含的条件，但是如果要多条件关联的时候，就需要添加多一个锁，而ReentranLock则无需这样做，只需要多次调用newCondition方法即可。</p>
+		  </div>
+		  
 	    </div>
 	    <div class="col-xs-12 col-sm-3">
 		  <div id="template-json" class="box clearfix">

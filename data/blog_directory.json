@@ -19,6 +19,12 @@
 			"title" : "从JVM层面理解volatile",
 			"outlook" : "摘要：Java主存与工作内存，分析volatile之前有必要讲下Java中线程是怎么与主存进行交互的，首先看下图，这个工作内存是跟线程相关联的，就是说每个线程都是专属于自己的工作内存，工作内存中保存了该线程使用到的变量的主内存的副本拷贝，线程对变量的所有操作都必须在工作内存中进行，不能直接读取主内存中的变量。工作内存和主内存之间都有一些原子操作来实现变量的存取，从工作内存到主内存的，从主内存到工作内存的，从而实现了两者之间的交互。下面列出8种操作......",
 			"time" : "posted @ 2015-05-23 23:22"
+		},
+		{
+			"address" : "blog/java/3.html",
+			"title" : "Synchronized和ReentrantLock之间的抉择",
+			"outlook" : "摘要：Synchronized的核心思想就是锁住一个对象，在对象上加锁，在lockTarget方法中，synchronized锁住的是一个target的对象，在lockThis这个实例方法中，锁住的是this这个对象，在lockClass这个类方法中，锁住的是类对应的Class对象，所以在使用synchronized的时候，我们都需要显式或者隐式地指定一个对象，我们可以很清除的看到其实JVM中是使用monitorenter指令和monitorexit指令去控制加锁和解锁......",
+			"time" : "posted @ 2015-05-25 20:40"
 		}
 	],
 	"oracle" : [
