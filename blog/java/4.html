@@ -161,7 +161,130 @@ public class CountDownLatch {
 		    <p><strong>mythread线程调用countDown方法。</strong>跟上面的差不多，最终核心的方法调用还是Sync的tryReleaseShared，如果c已经为0了，countDown就无效，不为0就用CAS操作减1.</p>
 		    <p>CountDownLatch的用途还是挺多的，一个典型的例子就是手动控制事务，从数据库读取多份数据做初始化。主线程调用多个线程去数据库取数据，等所有数据都到齐了，就开始初始化。感觉有点像大佬一样，叫这个工人去盛饭，叫那个工人去盛菜，等饭菜都到齐了，才开动吃饭。</p>
 		  </div>
-		 	 
+		  
+		  <div class="template">
+		    <h2>CyclicBarrier</h2>
+		    <p>它允许一组线程互相等待，直到到达某个公共屏障点。在涉及一组固定大小的线程的程序中，这些线程必须不时地互相等待，此时CyclicBarrier很有用。因为该barrier 在释放等待线程后可以重用，所以称它为循环的barrier。下面一个例子：</p>
+		    <pre><code class="java">
+class CyclicBarrierDemo {
+	private static int size;
+	private static CyclicBarrier barrier;
+	
+	static {
+		size = 3;
+		barrier = new CyclicBarrier(size);
+	}
+	
+	static class MyThread extends Thread {
+		public MyThread(String name) {
+			super(name);
+		}
+		
+		@Override
+		public void run() {
+			System.out.println(getName() + " wait ");
+			try {
+				Thread.sleep(1000);
+				barrier.await();
+				System.out.println(getName() + " wake up");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public static void main(String[] args) {
+		for(int i = 0; i < size; i++) {
+			new MyThread("thread " + i).start();
+		}
+	}
+}
+		    </code></pre>
+		    <p>上面的例子为了给读者更好的了解，它创建了3个线程，它执行各自执行run方法，调用CyclicBarrier的await方法的时候，看有木有达到指定数值，没有的话就阻塞了。所以只有等待达到了指定数值，线程才会被唤醒，打印wake up这句话，而且三个是同时唤醒，同时打印。</p>
+		    <p>CyclicBarrier的源码比CountDownLatch的多，对此我不贴出来了一一讲解，下面我大体讲下它的内部实现原理：</p>
+		    <p><strong>使用什么的加锁机制？</strong>CyclicBarrier内部使用的是ReentranLock的加锁解锁方法。</p>
+		    <p><strong>如何让线程互相等待？</strong>通过ReentranLock的newCondition方法调出一个条件，如何CyclicBarrier未达到指定的值，就调用await方法，达到了指定的值就调用signalAll方法，唤醒在该条件上等待队列的线程去竞争这个锁。</p>
+		    <p><strong>CountDownLatch和CyclicBarrier的对比：</strong></p>
+		    <ol>
+		      <li>内部实现。CountDownLatch使用的是自己对AQS的扩展，CyclicBarrier使用的是ReentranLock和Condition作为实现的机制。</li>
+		      <li>功能。CountDownLatch是一个多多个线程去等待一组线程的完成，而CyclicBarrier是多个线程之间的互相等待，直到达到指定值。</li>
+		      <li>重用性。CountDownLatch不可重用，CyclicBarrier可重用。</li>
+		    </ol>
+		  </div>
+		  
+		  <div class="template">
+		    <h2>Semaphore</h2>
+		    <p>一个计数信号量。从概念上讲，信号量维护了一个许可集。如有必要，在许可可用前会阻塞每一个acquire()，然后再获取该许可。每个release()添加一个许可，从而可能释放一个正在阻塞的获取者。但是，不使用实际的许可对象，Semaphore 只对可用许可的号码进行计数，并采取相应的行动。下面是一个20线程同时并发但受到Semaphore的限制只能有5个同时进行的例子：</p>
+		    <pre><code class="java">
+class SemaphoreDemo {
+	public static void main(String[] args) {
+		ExecutorService executor = Executors.newCachedThreadPool();
+		Semaphore semaphore = new Semaphore(5);
+		for(int i = 0; i < 20; i++) {
+			final int number = i;
+			Runnable r = new Runnable() {
+				@Override
+				public void run() {
+					try {
+						semaphore.acquire();
+						System.out.println("thread" + number + " working");
+						Thread.sleep((long) (Math.random() * 10000));
+						semaphore.release();
+						System.out.println("thread" + number + " end");
+					} catch(Exception e) {
+						e.printStackTrace();
+					}
+				}
+			};
+			executor.execute(r);
+		}
+	}
+}
+		    </code></pre>
+		    <p>Semaphore的底层实现，基本上CountDownLatch基本上是一致的，使用的是AQS框架，通过核心限制属性state，这个state其实就是你的Semaphore的允许值了。通过对state的CAS操作去做同步，达到限制值的时候就将线程放置等待队列中，调用release方法后state减1，就可以允许多一个线程进入了。</p>
+		  </div>
+		  
+		  <div class="template">
+		    <h2>Exchanger</h2>
+		    <p>可以在对中对元素进行配对和交换的线程的同步点。每个线程将条目上的某个方法呈现给exchange方法，与伙伴线程进行匹配，并且在返回时接收其伙伴的对象。简单的说可以用于两个线程之间进行通信，下面演示一个简单的Demo：</p>
+		    <pre><code class="java">
+class ExchangerDemo {
+	public static void main(String[] args) {
+		ExecutorService executor = Executors.newCachedThreadPool();
+		final Exchanger<String> exchanger = new Exchanger<String>();
+		executor.execute(new Runnable() {
+			@Override
+			public void run() {
+				String left = "hello ";
+				try {
+					Thread.sleep((long)(Math.random()*10000));
+					String right = exchanger.exchange(left);
+					System.out.println(Thread.currentThread().getName() + " print " + left + right);
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		executor.execute(new Runnable() {
+			@Override
+			public void run() {
+				String right = "world";
+				try {
+					Thread.sleep((long)(Math.random()*10000));
+					String left = exchanger.exchange(right);
+					System.out.println(Thread.currentThread().getName() + " print " + left + right);
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+}
+		    </code></pre>
+		    <p>上面两个线程互相等待，等待对方通过exchanger交互数据，通过上面的例子我们可以看到最终两个获取到了对方给的数据。</p>
+			<p>Exchanger比较少用，所以原理不是很懂，我后序在补充。</p>
+		  </div>
+		  
 	    </div>
 	    <div class="col-xs-12 col-sm-3">
 		  <div id="template-json" class="box clearfix">

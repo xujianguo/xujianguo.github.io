@@ -25,6 +25,12 @@
 			"title" : "Synchronized和ReentrantLock之间的抉择",
 			"outlook" : "摘要：Synchronized的核心思想就是锁住一个对象，在对象上加锁，在lockTarget方法中，synchronized锁住的是一个target的对象，在lockThis这个实例方法中，锁住的是this这个对象，在lockClass这个类方法中，锁住的是类对应的Class对象，所以在使用synchronized的时候，我们都需要显式或者隐式地指定一个对象，我们可以很清除的看到其实JVM中是使用monitorenter指令和monitorexit指令去控制加锁和解锁......",
 			"time" : "posted @ 2015-05-25 20:40"
+		},
+		{
+			"address" : "blog/java/4.html",
+			"title" : "同步器四大金刚",
+			"outlook" : "摘要：我们尝试用CountDownLatchDemo的例子对源码的流程进行讲解：用size去初始化counter。size在CountDownLatch最终会变成state变量的值，然后countDown方法去做减法，state的值在减到0之后就不变了,main线程调用await方法。main线程调用await方法实际上是调用sync的acquireSharedInterruptibly方法，acquireSharedInterruptibly里面主要是tryAcquireShared，这个方法的意思很简单，即使state变量为0了没......",
+			"time" : "posted @ 2015-05-28 21:30"
 		}
 	],
 	"oracle" : [
