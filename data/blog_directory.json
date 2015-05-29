@@ -51,6 +51,12 @@
 			"title" : "通过绑定变量实现SQL共享",
 			"outlook" : "摘要：Shared Pool的三大区域。SQL的解析跟Shared Pool有莫大的关系，在这里我先说一下Shared Pool里面的三大区域，有助于下面的理解。Library Cache。我们都知道SQL解析成执行计划后，会将SQL和执行计划缓存到Shared Pool中，具体就是缓存到这个Library Cache中。Free Memory。从名字我们知道这是一个未......",
 		    "time" : "posted @ 2015-05-20 20:21"
+		}, 
+		{
+			"address" : "blog/oracle/4.html",
+			"title" : "世界那么大，我想跟你谈谈Buffer Cache",
+			"outlook" : "摘要：Buffer Cache即数据高速缓存区，简单的说就是一块含有许多数据块的内存区域，这些数据块主要是数据文件中数据块的拷贝。Buffer Cache出现的原因跟CPU中的高速缓存一样，为了提供存取速度而出现的一种解决方案。Buffer Cache的主要功能包括下面几点：......",
+		    "time" : "posted @ 2015-05-29 23:52"
 		}
 	]
 }
