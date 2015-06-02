@@ -17,6 +17,10 @@
 		{
 			"id" : "oracle",
 			"content" : "Oracle"
+		},
+		{
+			"id" : "data_mining",
+			"content" : "数据挖掘"
 		}
 	]
 }

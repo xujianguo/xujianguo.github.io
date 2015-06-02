@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta charset="UTF-8">
+	<title>Blog of Ray Guo</title>
+	<link rel="icon" type="image/x-icon" href="https://assets-cdn.github.com/favicon.ico">
+	<link href="../../css/bootstrap.min.css" rel="stylesheet">
+	<link href="../../css/template.css" rel="stylesheet">
+	<link rel="stylesheet" href="../../highlight/styles/default.css">
+	<script src="../../highlight/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+</head>
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-xs-12">
+				<div id="photo-header" class="text-center">
+					<div id="photo">
+						<img src="../../picture/header.png" alt="avatar"/>
+					</div>
+					<div id="text-header">
+						<h1>
+							HELLO,<br>MY NAME IS <span>XuJianGuo</span> AND THIS IS MY BLOG
+						</h1>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-12 col-sm-9">
+				
+				<div class="template">
+					<h1>决策树之ID3分类算法</h1>
+				</div>
+				
+				<div class="template">
+					<h2>决策树构建的两大问题</h2>
+					<ol>
+						<li>如何选择合适的属性作为决策树的节点去划分样本</li>
+						<li>如何在适当的位置停止划分过程，得到大小合适的决策树</li>
+					</ol>
+				</div>
+				
+				<div class="template">
+					<h2>ID3算法的对应解决方案</h2>
+					<p>
+						<strong>节点构建：</strong>
+						计算属性集中每个属性的信息增益，选择最大的增益值对应的属性作为节点。信息增益是划分前样本数据集的不纯程度和划分后样本数据集的不纯程度的差值，增益越大，说明用该属性划分样本的子集越纯，越有利于分类。
+					</p>
+					<p>
+						<strong>划分停止：</strong>
+						当我们所有的属性能划分出一个类别出来的时候，这个就成为了叶子节点。否则继续用划分出的子集去进行节点的构建。
+					</p>
+				</div>
+				
+				<div class="template">
+					<h2>代码实现</h2>
+					<pre><code class="python">
+#coding=utf-8
+from math import log
+import operator
+from copy import deepcopy
+
+"""样本数据
+attributes是属性集合
+datas是对应的数据集合
+"""
+def sampleData():
+    datas = [
+        ['sunny', 'hot', 'high', 'weak', 'no'],
+        ['sunny', 'hot', 'high', 'strong', 'no'],
+        ['overcast', 'hot', 'high', 'weak', 'yes'],
+        ['rain', 'mild', 'high', 'weak', 'yes'], 
+        ['rain', 'cool', 'normal', 'weak', 'no']
+    ]
+    attributes = ['outlook', 'temperature', 'humidity', 'wind', 'play ball']
+    return attributes, datas
+
+"""ID3算法"""
+class ID3(object):
+    """初始化，设置属性集和数据集"""
+    def __init__(self, attributes, datas):
+        self.attributes = attributes
+        self.datas = datas
+        
+    """指定目标属性"""
+    def setTargetAttribute(self, targetAttribute):
+        self.targetAttribute = targetAttribute
+        #找出属性在属性集对应的索引
+        index = -1;
+        for i in range(len(self.attributes)):
+            if attributes[i] == self.targetAttribute:
+                index = i
+                break
+        #将目标属性和对应的值都移到最后
+        if index != -1:
+            self.attributes.remove(targetAttribute)
+            self.attributes.insert(len(self.attributes), targetAttribute)
+            for i in range(len(self.datas)):
+                temp = datas[i][index]
+                datas[i].remove(temp)
+                datas[i].insert(len(datas[i]), temp)
+    
+    def buildTree(self):
+        self.targetTree = self.tree(self.attributes, self.datas)
+        
+    """递归构建决策树"""
+    def tree(self, attributes, dataSet):
+        #目标属性列
+        targetList = [example[-1] for example in dataSet]
+        #只剩一个类别
+        if targetList.count(targetList[0]) == len(targetList):
+            return targetList[0]
+        #没有其他属性可分类
+        if len(dataSet[0]) == 1:
+            return self.findMoreElement(targetList)
+        #增益值最大的属性
+        bestAttributeIndex = self.findBestAttributeIndex(dataSet)
+        bestAttribute = attributes[bestAttributeIndex]
+        #决策树
+        resultTree = {bestAttribute:{}}
+        #增益值最大属性列的值
+        featureValues = [example[bestAttributeIndex] for example in dataSet]
+        featureValuesSet = set(featureValues)
+        del(attributes[bestAttributeIndex])
+        #遍历增益值最大属性列的值
+        for featureValue in featureValuesSet:
+            subDataSet = self.spiltDataSet(dataSet, bestAttributeIndex, featureValue)
+            resultTree[bestAttribute][featureValue] = self.tree(attributes, subDataSet)
+        return resultTree
+            
+    """查找集合中出现最多次的元素"""
+    def findMoreElement(self, targetList):
+        #通过字典计数
+        counter = {}
+        for element in targetList:
+            if element not in counter.keys():
+                counter[element] = 0
+            counter[element] += 1
+        #排序
+        sortedCounter = sorted(counter.iteritems(), key=operator.itemgetter(1), reverse=True)
+        #返回排序后的第一个
+        return sortedCounter[0][0]
+        
+    """计算数据集的信息熵"""
+    def calcEntropyBySet(self, dataSet):
+        dataSetNumber = len(dataSet)
+        label = {}
+        #对属性值分类计数
+        for feature in dataSet:
+            currentLabel = feature[-1]
+            if currentLabel not in label.keys():
+                label[currentLabel] = 0
+            label[currentLabel] += 1
+            
+        entropy = 0.0
+        #根据公式计算信息熵
+        for key in label:
+            p = float(label[key])/dataSetNumber
+            if p != 0:
+                entropy -= p * log(p, 2)
+                
+        return entropy
+    
+    """计算属性集中每个属性的信息增益，找出最大增益的属性索引值"""
+    def findBestAttributeIndex(self, dataSet):
+        attributeNumber = len(dataSet[0])-1
+        baseEntropy = self.calcEntropyBySet(dataSet)
+        bestGain = 0.0
+        bestAttributeIndex = -1
+        #遍历每个属性
+        for i in range(attributeNumber):
+            featureValues = [example[i] for example in dataSet]
+            featureValuesSet = set(featureValues)
+            newEntropy = 0.0
+            #计算属性上值对应的信息熵
+            for featureValue in featureValuesSet:
+                subDataSet = self.spiltDataSet(dataSet, i, featureValue)
+                p = len(subDataSet)/float(len(dataSet))
+                newEntropy += p * self.calcEntropyBySet(subDataSet)
+            #与当前增益最大的属性比较，比它大就进行替换
+            if (baseEntropy - newEntropy) > bestGain:
+                bestGain = baseEntropy - newEntropy
+                bestAttributeIndex = i
+        return bestAttributeIndex
+        
+    """根据属性值分裂数据集合"""    
+    def spiltDataSet(self, dataSet, featureIndex, featureValue):
+        result = []
+        for data in dataSet:
+            if data[featureIndex] == featureValue:
+                temp = data[:featureIndex]
+                temp.extend(data[featureIndex+1:])
+                result.append(temp)
+        return result
+    
+    """根据决策树预测"""
+    def predict(self, sample):
+        tree = deepcopy(self.targetTree)
+        while isinstance(tree, dict):
+            key = tree.keys()[0]
+            tree = tree[key][sample[key]]
+        return tree
+
+if __name__ == '__main__':
+    attributes, datas = sampleData()
+    id3 = ID3(attributes, datas)
+    id3.setTargetAttribute('play ball')
+    id3.buildTree()
+    print id3.predict({'outlook':'sunny', 'temperature':'hot', 'humidity':'high', 'wind':'weak'})
+    print id3.targetTree
+					</code></pre>
+				</div>
+				
+			</div>
+			<div class="col-xs-12 col-sm-3">
+				<div id="template-json" class="box clearfix">
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../js/jquery-1.8.3.js"></script>
+	<script src="../../js/bootstrap.min.js"></script>
+	<script src="../../js/handlebars-v3.0.3.js"></script>
+	<script src="../../js/show_directory.js"></script>
+</body>
+</html>
