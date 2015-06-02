@@ -3,28 +3,27 @@ var blog_directory;
 $(function() {
 	$.getJSON("https://xujianguo.github.io/data/blog_directory.json", function(result) {
 		blog_directory = eval(result);
-	});
-	
-	$.getJSON("https://xujianguo.github.io/data/common.json", function(result) {
-		var target = eval(result.type);
-		var content = '<h2>博文分类</h2>';
-		var target_array;
-		for(var i = 0; i < target.length; i++) {
-			target_array = eval('blog_directory.' + target[i].id);
-			content += '<a href="#" class="list-group-item" onclick="getDirectory(' + "'"
-				+ target[i].id + "'" + ')">' + target[i].content + '(' + target_array.length + ")" + '</a>';
-		}
-		$("#template-json").html(content);
-		var strs = window.location.pathname.split("/");
-		var current_page = strs[strs.length-1];
-		if(current_page == 'blog.html') {
-			var pid = getQueryString("id");
-			if(pid) {
-				getDirectory(pid);
-			} else {
-				getDirectory(target[0].id);
+		$.getJSON("https://xujianguo.github.io/data/common.json", function(result) {
+			var target = eval(result.type);
+			var content = '<h2>博文分类</h2>';
+			var target_array;
+			for(var i = 0; i < target.length; i++) {
+				target_array = eval('blog_directory.' + target[i].id);
+				content += '<a href="#" class="list-group-item" onclick="getDirectory(' + "'"
+					+ target[i].id + "'" + ')">' + target[i].content + '(' + target_array.length + ")" + '</a>';
 			}
-		}
+			$("#template-json").html(content);
+			var strs = window.location.pathname.split("/");
+			var current_page = strs[strs.length-1];
+			if(current_page == 'blog.html') {
+				var pid = getQueryString("id");
+				if(pid) {
+					getDirectory(pid);
+				} else {
+					getDirectory(target[0].id);
+				}
+			}
+		});
 	});
 });
 
