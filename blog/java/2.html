@@ -153,7 +153,7 @@ Constant pool:
 SourceFile: "Test.java"
             </code></pre>
             <p>我们会发现其实对volatile类型的变量a的自增还是会切换成几个指令来运行，一旦换成几个指令来执行并且没有使用lock指令的话，还是会出现线程安全的问题，所以volatile不是原子性的。如果我们要一个变量保证原子性的话，我们就可以使用java.util.concurrent.atomic包下的原子性，我们拿AtomicInteger类来看看它是怎么实现原子性的。</p>
-            我们翻看一下AtomicInteger的源码，可以发现：
+            <p>我们翻看一下AtomicInteger的源码，可以发现：</p>
 			<pre><code class="java">
 //抽取部分做说明
 public class AtomicInteger extends Number implements java.io.Serializable {
