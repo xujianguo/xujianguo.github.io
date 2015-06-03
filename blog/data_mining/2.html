@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta charset="UTF-8">
+	<title>Blog of Ray Guo</title>
+	<link rel="icon" type="image/x-icon" href="https://assets-cdn.github.com/favicon.ico">
+	<link href="../../css/bootstrap.min.css" rel="stylesheet">
+	<link href="../../css/template.css" rel="stylesheet">
+	<link rel="stylesheet" href="../../highlight/styles/default.css">
+	<script src="../../highlight/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+</head>
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-xs-12">
+				<div id="photo-header" class="text-center">
+					<div id="photo">
+						<img src="../../picture/header.png" alt="avatar"/>
+					</div>
+					<div id="text-header">
+						<h1>
+							HELLO,<br>MY NAME IS <span>XuJianGuo</span> AND THIS IS MY BLOG
+						</h1>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-12 col-sm-9">
+				
+				<div class="template">
+					<h1>从美女与杯罩问题谈谈贝叶斯分类算法</h1>
+				</div>
+				
+				<div class="template">
+					<h2>美女与杯罩问题</h2>
+					<p>天气很热，很多女生去游泳池游泳，在一个女生专属游泳池中，其中60%是美女，剩下的是肥婆；美女中杯罩为D的概率是20%，肥婆中杯罩为D的概率是80%。此时，有位D杯罩的女生游上岸，是美女的几率大还是肥婆的几率大呢？</p>
+				</div>
+				
+				<div class="template">
+					<h2>贝叶斯定理引入</h2>
+					<p>我们来看看下面就几个概率的概念：</p>
+					<ol>
+						<li>P(X):表示条件X=美女的概率</li>
+						<li>P(Y):表示条件Y=D罩杯的概率</li>
+						<li>P(X,Y):表示条件X=美女且条件Y=D罩杯的概念</li>
+						<li>P(Y|X):表示在条件X=美女成立的条件下，Y=D罩杯的概率</li>
+						<li>P(X|Y):表示在条件Y=D罩杯成立的条件下，X=美女的概率</li>
+					</ol>
+					<p>我们知道下面的这个公式是成立的：</p>
+					<p><strong>P(X,Y) = P(X|Y)P(Y) = P(Y|X)P(X)</strong></p>
+					<p>对这个公式进行变换就可以得到贝叶斯定理了，如下所示：</p>
+					<p><strong>P(Y|X) = P(X|Y)P(Y)/P(X)</strong></p>
+				</div>
+				
+				<div class="template">
+					<h2>用贝叶斯解决问题</h2>
+					<p>美女与杯罩的问题，在贝叶斯定理的帮助下，快速解决。</p>
+					<p><strong>P(X=美女|Y=D罩杯) = P(Y=D罩杯|X=美女)P(X=美女)/P(Y=D罩杯) = (0.2 x 0.6)/P(Y=D罩杯) = 0.12/P(Y=D罩杯)</strong></p>
+					<p><strong>P(X=肥婆|Y=D罩杯) = P(Y=D罩杯|X=肥婆)P(X=肥婆)/P(Y=D罩杯) = (0.8 x 0.4)/P(Y=D罩杯) = 0.32/P(Y=D罩杯)</strong></p>
+					<p>从上面的结果来看，分母一样，比较分子大小就可以了，很明显，是肥婆的概念大一些，ORZ，不过只是概率，为了不错过美女，也必须看，看到肥婆最多洗眼咯。</p>
+				</div>
+				
+				<div class="template">
+					<h2>朴素贝叶斯分类算法</h2>
+					<p>以贝叶斯定理为基础的分类器模型有很多中，朴素贝叶斯分类算法利用贝叶斯定理来预测一个未知类别的样本属于各个类别的可能性，选择可能性最大的一个类别作为该样本的最终类别，下面简单描述一下过程：</p>
+					<ol>
+						<li>首先我们要有一个数据集，因为我们需要根据这个数据集去预测分类，最终输入一个待分类的样本数据，得到分类的类别。</li>
+						<li>我们假设最终的分类列别有可能是c1，c2，c3，数据集中的属性有x1，x2，x3，x4，我们的目标是计算出P(c1|x1，x2，x3，x4)，P(c2|x1，x2，x3，x4)，P(c3|x1，x2，x3，x4)，概率值最大的那个就是我们输入条件下对应的分类。</li>
+						<li>对于P(c1|x1，x2，x3，x4)，根据贝叶斯定理可以得到：P(c1|x1，x2，x3，x4) = P(x1，x2，x3，x4|c1)P(c1)/P(x1，x2，x3，x4)，对于P(x1，x2，x3，x4)来说我们常数，我们可以忽略，P(c1)就是在数据集中c1类别的概率，很简单，对于P(x1，x2，x3，x4|c1)可以转换成P(x1|c1)P(x2|c1)P(x3|c1)P(x4|c1)，对于计算P(x1|c1)，也是简单得很，最终问题就变成了P(c1|x1，x2，x3，x4) = P(x1|c1)P(x2|c1)P(x3|c1)P(x4|c1)P(c1)</li>
+					</ol>
+					<p>下面演示一下代码的实现：</p>
+					<pre><code class="python">
+#coding=utf-8
+import operator
+
+"""样本数据
+attributes是属性集合
+datas是对应的数据集合
+"""
+def sampleData():
+    datas = [
+        ['sunny', 'hot', 'high', 'weak', 'no'],
+        ['sunny', 'hot', 'high', 'strong', 'yes'],
+        ['overcast', 'hot', 'high', 'weak', 'yes'],
+        ['rain', 'mild', 'high', 'weak', 'yes'], 
+        ['rain', 'cool', 'normal', 'weak', 'no']
+    ]
+    attributes = ['outlook', 'temperature', 'humidity', 'wind', 'play ball']
+    return attributes, datas
+
+"""朴素贝叶斯分类算法"""
+class SimpleNaiveBayes(object):
+    """初始化，设置属性集和数据集"""
+    def __init__(self, attributes, datas):
+        self.attributes = attributes
+        self.datas = datas
+        
+    """指定目标属性并定位索引"""
+    def setTargetAttribute(self, targetAttribute):
+        self.targetAttribute = targetAttribute
+        self.targetIndex = self.locateAttribute(targetAttribute)
+        
+    def classify(self, sample):
+        #分类类别
+        kinds = self.getTargetSet()
+        #分类类别概率
+        kindsProbability = {}
+        for kind in kinds:
+            p = 1.0
+            for key in sample.keys():
+                p *= self.countAttributeProbabilityOnKind(kind, key, sample[key])
+            p *= self.countKindProbability(kind)
+            kindsProbability[kind] = p
+        #排序
+        sortedResult = sorted(kindsProbability.iteritems(), key=operator.itemgetter(1), reverse=True)        
+        return sortedResult[0][0]
+            
+        
+    """获取目标属性列上的分类类别"""
+    def getTargetSet(self):
+        result = []
+        for data in self.datas:
+            result.append(data[self.targetIndex])
+        result = set(result)
+        return result
+    
+    """计算分类类别的概率"""
+    def countKindProbability(self, kind):
+        counter = 0
+        for data in self.datas:
+            if data[self.targetIndex] == kind:
+                counter += 1
+        result = float(counter)/len(self.datas)
+        return result
+    
+    """计算属性在分类类别上的概率"""
+    def countAttributeProbabilityOnKind(self, kind, key, value):
+        keyIndex = self.locateAttribute(key)
+        keyCounter = 0
+        kindCounter = 0
+        for data in self.datas:
+            if data[keyIndex] == value and data[self.targetIndex] == kind:
+                keyCounter += 1
+            if data[self.targetIndex] == kind:
+                kindCounter += 1
+        result = float(keyCounter)/kindCounter
+        return result
+        
+    """定位属性索引"""
+    def locateAttribute(self, attribute):
+        for i in range(len(self.attributes)):
+            if self.attributes[i] == attribute:
+                return i
+        return -1
+        
+if __name__ == '__main__':
+    attributes, datas = sampleData()
+    snb = SimpleNaiveBayes(attributes, datas)
+    snb.setTargetAttribute('play ball')
+    sample = {'outlook':'sunny', 'temperature':'hot', 'humidity':'high', 'wind':'weak'}
+    print snb.classify(sample)
+					</code></pre>
+				</div>
+				
+			</div>
+			<div class="col-xs-12 col-sm-3">
+				<div id="template-json" class="box clearfix">
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../js/jquery-1.8.3.js"></script>
+	<script src="../../js/bootstrap.min.js"></script>
+	<script src="../../js/handlebars-v3.0.3.js"></script>
+	<script src="../../js/show_directory.js"></script>
+</body>
+</html>
