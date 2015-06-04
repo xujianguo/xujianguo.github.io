@@ -158,4 +158,9 @@ body {
 	color : #4169E1;
 }
 
+.template img {
+	display:block;
+	margin:0 auto;
+}
+
 
