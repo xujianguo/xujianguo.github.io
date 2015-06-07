@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta charset="UTF-8">
+	<title>Blog of Ray Guo</title>
+	<link rel="icon" type="image/x-icon" href="https://assets-cdn.github.com/favicon.ico">
+	<link href="../../css/bootstrap.min.css" rel="stylesheet">
+	<link href="../../css/template.css" rel="stylesheet">
+	<link rel="stylesheet" href="../../highlight/styles/default.css">
+	<script src="../../highlight/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+</head>
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-xs-12">
+				<div id="photo-header" class="text-center">
+					<div id="photo">
+						<img src="../../picture/header.png" alt="avatar"/>
+					</div>
+					<div id="text-header">
+						<h1>
+							HELLO,<br>MY NAME IS <span>XuJianGuo</span> AND THIS IS MY BLOG
+						</h1>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-12 col-sm-9">
+				<div class="template">
+					<h1>从体系结构上对SQL进行优化</h1>
+				</div>
+				
+				<div class="template">
+					<h2>共享池相关的优化</h2>
+					<p><strong>1.绑定变量</strong></p>
+					<p>通过绑定变量可以减少硬解析，具体的做法参考我下面这篇文章：<a href="3.html">通过绑定变量实现SQL共享</a>。</p>
+					<p><strong>2.session_cached_cursors参数的影响</strong></p>
+					<p>在分析这个参数的作用的时候，我们需要先搞定两个概念：<strong>shared cursor</strong>和<strong>session cursor。</strong></p>
+					<p><strong>shared curosr:</strong>它就是存在与shared pool中的一种object对象，简单的说就是缓存在library cache里的sql和匿名pl/sql，可能是在硬解析的时候解析出来的sql_id和一些执行计划等数据。</p>
+					<p><strong>session curosr:</strong>其实就是指的跟这个session相对应的server process的PGA里（准确的说是UGA）的一块内存区域（或者说内存结构），它的目的是为了处理且一次只处理一条sql语句。</p>
+					<p>在Oracle里面有这样的一种机制，Oracle会检查library cache中parse request的次数是否超过3次。 如果一个cursor 被关闭3次，Oracle就认为这个session cursor 需要移动到session cursor cache。 而这个session cursor cache 是保存在SharedPool中的。即对应的cursor 从PGA移动到了SGA。 那么放到Session cursor cache之后，对于同样的查询直接从cursor cache中取就可以了，从而减少解析次数。</p>
+					<p>session_cached_cursors就是说明了session cursor cache的大小，下面我们看看有设置跟没有设置这个参数的区别。</p>
+					<pre><code class="sql">
+SQL> drop table t2 purge;
+
+Table dropped.
+
+SQL> set timing on;
+SQL> create table t2(x number);
+
+Table created.
+
+Elapsed: 00:00:00.02
+SQL> alter session set session_cached_cursors=0;
+
+Session altered.
+
+Elapsed: 00:00:00.00
+SQL> begin
+  2      for i in 1..100000
+  3          loop
+  4              execute immediate 'insert into t2 values(:x)' using i;
+  5          end loop;
+  6      commit;   
+  7  end;
+  8  /
+
+PL/SQL procedure successfully completed.
+
+Elapsed: 00:00:06.32
+SQL> drop table t2 purge;
+
+Table dropped.
+
+Elapsed: 00:00:00.16
+SQL> create table t2(x number); 
+
+Table created.
+
+Elapsed: 00:00:00.01
+SQL> alter session set session_cached_cursors=60;
+
+Session altered.
+
+Elapsed: 00:00:00.00
+SQL> begin
+  2      for i in 1..100000
+  3          loop
+  4              execute immediate 'insert into t2 values(:x)' using i;
+  5          end loop;
+  6      commit;
+  7  end;
+  8  /
+
+PL/SQL procedure successfully completed.
+
+Elapsed: 00:00:03.23
+					</code></pre>
+					<p>从上面可以很容易看出，session_cached_cursors在为0的情况下跟为60的情况下呈现出明显不同的效率，所以正确的设置好session_cached_cursors对SQL优化性能还是有帮助的，不可否认session_cached_cursors会增加内存空间，但是可以连用缓存这个特性加快了解析的速度。</p>
+				</div>
+				
+				<div class="template">
+					<h2>Buffer Cache相关的优化</h2>
+					<p><strong>1.缓冲优化</strong></p>
+					<p>这个缓冲优化的技术其实很简单，就是先执行一次语句，让数据在Buffer Cache中缓存了，下面就可以在Buffer Cache中直接获取，不需要进行额外的物理读。</p>
+					<pre class="sql">
+SQL> create table t2 as select * from dba_objects;
+
+Table created.
+
+Elapsed: 00:00:00.46
+SQL> set linesize 1000
+SQL> set autotrace on
+SQL> set timing on
+SQL> select count(*) from t2;
+
+  COUNT(*)
+----------
+     50361
+
+Elapsed: 00:00:00.05
+
+Execution Plan
+----------------------------------------------------------
+Plan hash value: 3321871023
+
+-------------------------------------------------------------------
+| Id  | Operation          | Name | Rows  | Cost (%CPU)| Time     |
+-------------------------------------------------------------------
+|   0 | SELECT STATEMENT   |      |     1 |   158   (1)| 00:00:02 |
+|   1 |  SORT AGGREGATE    |      |     1 |            |          |
+|   2 |   TABLE ACCESS FULL| T2   | 45557 |   158   (1)| 00:00:02 |
+-------------------------------------------------------------------
+
+Note
+-----
+   - dynamic sampling used for this statement
+
+
+Statistics
+----------------------------------------------------------
+         28  recursive calls
+          0  db block gets
+        761  consistent gets
+        692  physical reads
+          0  redo size
+        517  bytes sent via SQL*Net to client
+        469  bytes received via SQL*Net from client
+          2  SQL*Net roundtrips to/from client
+          0  sorts (memory)
+          0  sorts (disk)
+          1  rows processed
+
+SQL> alter system flush shared_pool;
+
+System altered.
+
+Elapsed: 00:00:00.06
+SQL> select count(*) from t2;
+
+  COUNT(*)
+----------
+     50361
+
+Elapsed: 00:00:00.05
+
+Execution Plan
+----------------------------------------------------------
+Plan hash value: 3321871023
+
+-------------------------------------------------------------------
+| Id  | Operation          | Name | Rows  | Cost (%CPU)| Time     |
+-------------------------------------------------------------------
+|   0 | SELECT STATEMENT   |      |     1 |   158   (1)| 00:00:02 |
+|   1 |  SORT AGGREGATE    |      |     1 |            |          |
+|   2 |   TABLE ACCESS FULL| T2   | 45557 |   158   (1)| 00:00:02 |
+-------------------------------------------------------------------
+
+Note
+-----
+   - dynamic sampling used for this statement
+
+
+Statistics
+----------------------------------------------------------
+        284  recursive calls
+          0  db block gets
+        789  consistent gets
+          0  physical reads
+          0  redo size
+        517  bytes sent via SQL*Net to client
+        469  bytes received via SQL*Net from client
+          2  SQL*Net roundtrips to/from client
+          4  sorts (memory)
+          0  sorts (disk)
+          1  rows processed
+					</pre>
+					<p>很明显，第一次的物理读很多，第二次的物理读就没有了。这样的优化技术很简单，但是也很容易被人认为不需要使用，认为这样是自动执行的。但是我任务这样优化的技术类似与设计模式中的单例模式，初始化一次后就可以重复利用。对于一些需要很久初始化的操作，我们可以预先执行一遍，下次就可以重用了，而不是等到实际应用的时候才去加载。</p>
+					<p><strong>2.直接路径读写</strong></p>
+					<p>只要我们明白这个概念，就知道直到这种优化技术的优缺点了。<strong>直接路径读写</strong>就是直接绕过Oracle的内存区，直接对磁盘进行读写，下面我们看看它的效率怎么样。</p>
+					<pre><code class="sql">
+
+					</code></pre>
+				</div>
+				
+			</div>
+			<div class="col-xs-12 col-sm-3">
+				<div id="template-json" class="box clearfix">
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../js/jquery-1.8.3.js"></script>
+	<script src="../../js/bootstrap.min.js"></script>
+	<script src="../../js/handlebars-v3.0.3.js"></script>
+	<script src="../../js/show_directory.js"></script>
+</body>
+</html>
