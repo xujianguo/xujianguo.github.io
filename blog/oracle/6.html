@@ -99,6 +99,8 @@ PL/SQL procedure successfully completed.
 Elapsed: 00:00:03.23
 					</code></pre>
 					<p>从上面可以很容易看出，session_cached_cursors在为0的情况下跟为60的情况下呈现出明显不同的效率，所以正确的设置好session_cached_cursors对SQL优化性能还是有帮助的，不可否认session_cached_cursors会增加内存空间，但是可以连用缓存这个特性加快了解析的速度。</p>
+					<p><strong>3.Result Cache</strong></p>
+					<p>传统的Oracle数据读写操作，都是将数据块（Data Block）缓存到Buffer Cache中。每次SQL语句来了之后，都是从Buffer Cache中检索数据块，也要发生逻辑读。而Result Cache的原理则是更近了一步，是将SQL结果集直接进行保存在Shared Pool里面，每次SQL语句来了，就直接把结果集合返回回去，连逻辑读都省去了。</p>
 				</div>
 				
 				<div class="template">
