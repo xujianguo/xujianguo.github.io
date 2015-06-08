@@ -105,7 +105,7 @@ Elapsed: 00:00:03.23
 					<h2>Buffer Cache相关的优化</h2>
 					<p><strong>1.缓冲优化</strong></p>
 					<p>这个缓冲优化的技术其实很简单，就是先执行一次语句，让数据在Buffer Cache中缓存了，下面就可以在Buffer Cache中直接获取，不需要进行额外的物理读。</p>
-					<pre class="sql">
+					<pre><code class="sql">
 SQL> create table t2 as select * from dba_objects;
 
 Table created.
@@ -196,13 +196,106 @@ Statistics
           4  sorts (memory)
           0  sorts (disk)
           1  rows processed
-					</pre>
+					</code></pre>
 					<p>很明显，第一次的物理读很多，第二次的物理读就没有了。这样的优化技术很简单，但是也很容易被人认为不需要使用，认为这样是自动执行的。但是我任务这样优化的技术类似与设计模式中的单例模式，初始化一次后就可以重复利用。对于一些需要很久初始化的操作，我们可以预先执行一遍，下次就可以重用了，而不是等到实际应用的时候才去加载。</p>
 					<p><strong>2.直接路径读写</strong></p>
 					<p>只要我们明白这个概念，就知道直到这种优化技术的优缺点了。<strong>直接路径读写</strong>就是直接绕过Oracle的内存区，直接对磁盘进行读写，下面我们看看它的效率怎么样。</p>
 					<pre><code class="sql">
+SQL> create table t2 as select * from dba_objects;
 
+Table created.
+
+Elapsed: 00:00:00.27
+SQL> insert into t2 select * from t2;
+
+50360 rows created.
+
+Elapsed: 00:00:00.47
+SQL> create table test as select * from dba_objects where 1=2;
+
+Table created.
+
+Elapsed: 00:00:00.03
+SQL> commit
+  2  ;
+
+Commit complete.
+
+Elapsed: 00:00:00.00
+SQL> insert into test select * from t2;
+
+100720 rows created.
+
+Elapsed: 00:00:01.36
+SQL> commit;
+
+Commit complete.
+
+Elapsed: 00:00:00.01
+SQL> drop table test purge;
+
+Table dropped.
+
+Elapsed: 00:00:00.11
+SQL> create table test as select * from dba_objects where 1=2;
+
+Table created.
+
+Elapsed: 00:00:00.03
+SQL> insert /*+ append */ into test select * from t2;
+
+100720 rows created.
+
+Elapsed: 00:00:00.12
 					</code></pre>
+					<p>从上面我们可以明显感受到直接路径的读写比普通的insert的速度快挺多的，基于它们是直接向磁盘中写入，不需要经过SGA的处理，省去了很多步骤。但是我们必须意识到一点，没有经过SGA的处理，那么数据是不会缓存在Buffer Cache的，所以第一次读取必然会导致很大的物理读。</p>
+				</div>
+				
+				<div class="template">
+					<h2>日志相关的优化</h2>
+					<p><strong>1.批量提交</strong></p>
+					<p>我们都在一个事务中进行的操作，只有commit之后，数据才会进行同步，否则数据的更改只是有效在当前会话的当前事务。对于一个会话中，我们频率的commit事务，无疑会增加了开销，如果我们统一使用一个commit进行提交的话，效率上会有提高。</p>
+					<pre><code class="sql">
+SQL> create table t2(x number);
+
+Table created.
+
+Elapsed: 00:00:00.03
+SQL> begin
+  2      for i in 1..100000 loop
+  3          insert into t2 values(i);
+  4          commit;
+  5      end loop;
+  6  end;
+  7  /
+
+PL/SQL procedure successfully completed.
+
+Elapsed: 00:00:09.70
+SQL> drop table t2 purge;
+
+Table dropped.
+
+Elapsed: 00:00:00.04
+SQL> create table t2(x number);   
+
+Table created.
+
+Elapsed: 00:00:00.01
+SQL> begin  
+  2      for i in 1..100000 loop
+  3          insert into t2 values(i);
+  4      end loop;
+  5      commit;
+  6  end;
+  7  /
+
+PL/SQL procedure successfully completed.
+
+Elapsed: 00:00:02.86
+					</code></pre>
+					<p><strong>2.日志关闭</strong></p>
+					<p>日志关闭这种优化技术在不讨论好不好之前，可以肯定的说，关闭日志后肯定可以提升效率，因为这个表不需要在做日志的操作了，但是没有日志，这个表在操作的过程中失误了就不能通过日志来恢复，有利也有弊，只能说，慎用！！！</p>
 				</div>
 				
 			</div>

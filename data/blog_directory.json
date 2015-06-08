@@ -57,6 +57,12 @@
 			"title" : "世界那么大，我想跟你谈谈Buffer Cache",
 			"outlook" : "摘要：Buffer Cache即数据高速缓存区，简单的说就是一块含有许多数据块的内存区域，这些数据块主要是数据文件中数据块的拷贝。Buffer Cache出现的原因跟CPU中的高速缓存一样，为了提供存取速度而出现的一种解决方案。Buffer Cache的主要功能包括下面几点：......",
 		    "time" : "posted @ 2015-05-29 23:52"
+		},
+		{
+			"address" : "blog/oracle/6.html",
+			"title" : "从体系结构上对SQL进行优化",
+			"outlook" : "在Oracle里面有这样的一种机制，Oracle会检查library cache中parse request的次数是否超过3次。 如果一个cursor 被关闭3次，Oracle就认为这个session cursor 需要移动到session cursor cache。 而这个session cursor cache 是保存在SharedPool中的。即对应的cursor 从PGA移动到了SGA......",
+		    "time" : "posted @ 2015-06-08 17:32"
 		}
 	],
 	"data_mining" : [
