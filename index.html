@@ -1,221 +1,229 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
+<head>
     <meta charset="UTF-8">
     <title>Ray Guo</title>
-	<link rel="icon" type="image/x-icon" href="https://assets-cdn.github.com/favicon.ico">
-	<link href="css/bootstrap.min.css" rel="stylesheet">
-	<link href="css/font-awesome.css" rel="stylesheet">
-	<link href="css/main.css" rel="stylesheet">
-	<script async="" src="js/analytics.js"></script>
-  </head>
-  <body id="template-json">
-	  <div class="container">
-	    <div class="row">
-		  <div class="col-xs-12">
-		    <div id="photo-header" class="text-center">
-			  <div id="photo">
-			    <img src="picture/header.png" alt="avatar"/>
-			  </div>
-			  <div id="text-header">
-			    <h1>
-				  {{{header}}}
-				</h1>
-			  </div>
-			</div>
-		  </div>
-		</div>
-        <div class="row">
-		  <div class="col-xs-12 col-sm-7">
-		    <!-- introduction -->
-			<div class="box">
-			  <h2>{{introduction.title}}</h2>
-			  <p>{{introduction.content}}</p>
-			</div>
-			<!-- price -->
-			<div class="box">
-			  <h2>{{price.title}}</h2>
-			  <ul id="price" class="clearfix">
-					<li>
-				  <div class="year pull-left">{{price.content.year1}}</div>
-				  <div class="description pull-right">
-				    <h3>{{price.content.title1}}</h3>
-					<p>{{price.content.description1}}</p>
-				  </div>
-				</li>
-				<li>
-				  <div class="year pull-left">{{price.content.year2}}</div>
-				  <div class="description pull-right">
-					 <h3>{{price.content.title2}}</h3>
-					<p>{{price.content.description2}}</p>
-				  </div>
-				</li>
-				<li>
-				  <div class="year pull-left">{{price.content.year3}}</div>
-				  <div class="description pull-right">
-					 <h3>{{price.content.title3}}</h3>
-					<p>{{price.content.description3}}</p>
-				  </div>
-				</li>
-				<li>
-				  <div class="year pull-left">{{price.content.year4}}</div>
-				  <div class="description pull-right">
-					 <h3>{{price.content.title4}}</h3>
-					<p>{{price.content.description4}}</p>
-				  </div>
-				</li>
-			  </ul>
-			</div>
-			<!-- project experience -->
-			<div class="box">
-			  <h2>{{experience.title}}</h2>
-			  <div class="job clearfix">
-                <div class="col-xs-3">
-                  <div class="where">{{experience.content.which1}}</div>
-                  <div class="year">{{experience.content.when1}}</div>
+    <link rel="icon" type="image/x-icon" href="https://assets-cdn.github.com/favicon.ico">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/font-awesome.css" rel="stylesheet">
+    <link href="css/main.css" rel="stylesheet">
+    <script async="" src="js/analytics.js"></script>
+</head>
+<body id="template-json">
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <div id="photo-header" class="text-center">
+                <div id="photo">
+                    <img src="picture/header.png" alt="avatar"/>
                 </div>
-                <div class="col-xs-9">
-                  <div class="profession">{{experience.content.who1}}</div>
-                  <div class="description">
-                    {{experience.content.how1}}
-                  </div>
+                <div id="text-header">
+                    <h1>
+                        {{{header}}}
+                    </h1>
                 </div>
-              </div>
-              <div class="job clearfix">
-                <div class="col-xs-3">
-                  <div class="where">{{experience.content.which2}}</div>
-                  <div class="year">{{experience.content.when2}}</div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12 col-sm-7">
+            <!-- introduction -->
+            <div class="box">
+                <h2>{{introduction.title}}</h2>
+
+                <p>{{introduction.content}}</p>
+            </div>
+            <!-- price -->
+            <div class="box">
+                <h2>{{price.title}}</h2>
+                <ul id="price" class="clearfix">
+                    <li>
+                        <div class="year pull-left">{{price.content.year1}}</div>
+                        <div class="description pull-right">
+                            <h3>{{price.content.title1}}</h3>
+
+                            <p>{{price.content.description1}}</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="year pull-left">{{price.content.year2}}</div>
+                        <div class="description pull-right">
+                            <h3>{{price.content.title2}}</h3>
+
+                            <p>{{price.content.description2}}</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="year pull-left">{{price.content.year3}}</div>
+                        <div class="description pull-right">
+                            <h3>{{price.content.title3}}</h3>
+
+                            <p>{{price.content.description3}}</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="year pull-left">{{price.content.year4}}</div>
+                        <div class="description pull-right">
+                            <h3>{{price.content.title4}}</h3>
+
+                            <p>{{price.content.description4}}</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <!-- project experience -->
+            <div class="box">
+                <h2>{{experience.title}}</h2>
+
+                <div class="job clearfix">
+                    <div class="col-xs-3">
+                        <div class="where">{{experience.content.which1}}</div>
+                        <div class="year">{{experience.content.when1}}</div>
+                    </div>
+                    <div class="col-xs-9">
+                        <div class="profession">{{experience.content.who1}}</div>
+                        <div class="description">
+                            {{experience.content.how1}}
+                        </div>
+                    </div>
                 </div>
-                <div class="col-xs-9">
-                  <div class="profession">{{experience.content.who2}}</div>
-                  <div class="description">
-                    {{experience.content.how2}}
-                  </div>
+                <div class="job clearfix">
+                    <div class="col-xs-3">
+                        <div class="where">{{experience.content.which2}}</div>
+                        <div class="year">{{experience.content.when2}}</div>
+                    </div>
+                    <div class="col-xs-9">
+                        <div class="profession">{{experience.content.who2}}</div>
+                        <div class="description">
+                            {{experience.content.how2}}
+                        </div>
+                    </div>
                 </div>
-              </div>
-              <div class="job clearfix">
-                <div class="col-xs-3">
-                  <div class="where">{{experience.content.which3}}</div>
-                  <div class="year">{{experience.content.when3}}</div>
+                <div class="job clearfix">
+                    <div class="col-xs-3">
+                        <div class="where">{{experience.content.which3}}</div>
+                        <div class="year">{{experience.content.when3}}</div>
+                    </div>
+                    <div class="col-xs-9">
+                        <div class="profession">{{experience.content.who3}}</div>
+                        <div class="description">
+                            {{experience.content.how3}}
+                        </div>
+                    </div>
                 </div>
-                <div class="col-xs-9">
-                  <div class="profession">{{experience.content.who3}}</div>
-                  <div class="description">
-                    {{experience.content.how3}}
-                  </div>
+                <div class="job clearfix">
+                    <div class="col-xs-3">
+                        <div class="where">{{experience.content.which4}}</div>
+                        <div class="year">{{experience.content.when4}}</div>
+                    </div>
+                    <div class="col-xs-9">
+                        <div class="profession">{{experience.content.who4}}</div>
+                        <div class="description">
+                            {{experience.content.how4}}
+                        </div>
+                    </div>
                 </div>
-              </div>
-              <div class="job clearfix">
-                <div class="col-xs-3">
-                  <div class="where">{{experience.content.which4}}</div>
-                  <div class="year">{{experience.content.when4}}</div>
+                <div class="job clearfix">
+                    <div class="col-xs-3">
+                        <div class="where">{{experience.content.which5}}</div>
+                        <div class="year">{{experience.content.when5}}</div>
+                    </div>
+                    <div class="col-xs-9">
+                        <div class="profession">{{experience.content.who5}}</div>
+                        <div class="description">
+                            {{experience.content.how5}}
+                        </div>
+                    </div>
                 </div>
-                <div class="col-xs-9">
-                  <div class="profession">{{experience.content.who4}}</div>
-                  <div class="description">
-                    {{experience.content.how4}}
-                  </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-5">
+            <!-- contact -->
+            <div class="box clearfix">
+                <h2>{{contact.title}}</h2>
+
+                <div class="contact-item">
+                    <div class="icon pull-left text-center">
+                        <img src="picture/phone.png"></img>
+                    </div>
+                    <div class="title only pull-right">{{contact.content.phone}}</div>
                 </div>
-              </div>
-              <div class="job clearfix">
-                <div class="col-xs-3">
-                  <div class="where">{{experience.content.which5}}</div>
-                  <div class="year">{{experience.content.when5}}</div>
+                <div class="contact-item">
+                    <div class="icon pull-left text-center">
+                        <img src="picture/mail.png"></img>
+                    </div>
+                    <div class="title only pull-right">{{contact.content.email}}</div>
                 </div>
-                <div class="col-xs-9">
-                  <div class="profession">{{experience.content.who5}}</div>
-                  <div class="description">
-                   {{experience.content.how5}}
-                  </div>
+                <div class="contact-item">
+                    <div class="icon pull-left text-center">
+                        <img src="picture/message.png"></img>
+                    </div>
+                    <div class="title only pull-right">{{contact.content.wechat}}</div>
                 </div>
-              </div>
-			</div>
-		  </div>
-		  <div class="col-xs-12 col-sm-5">
-			<!-- contact -->
-		    <div class="box clearfix">
-		      <h2>{{contact.title}}</h2>
-		      <div class="contact-item">
-                <div class="icon pull-left text-center">
-				  <img src="picture/phone.png"></img>
+            </div>
+            <!-- skill -->
+            <div class="box">
+                <h2>{{skill.title}}</h2>
+
+                <div class="skill">
+                    <div class="item-skills" data-percent="0.80" style="width: 366px;">Java</div>
+                    <div class="item-skills" data-percent="0.60" style="width: 274px;">C</div>
+                    <div class="item-skills" data-percent="0.40" style="width: 183px;">Python</div>
+                    <div class="item-skills" data-percent="0.30" style="width: 137px;">Shell</div>
+                    <div class="item-skills" data-percent="0.40" style="width: 183px;">HTML/CSS</div>
+                    <div class="item-skills" data-percent="0.40" style="width: 137px;">JS/JQUERY</div>
+                    <div class="item-skills" data-percent="0.40" style="width: 183px;">MySQL</div>
+                    <div class="item-skills" data-percent="0.40" style="width: 183px;">Oracle</div>
+                    <div class="item-skills" data-percent="0.40" style="width: 183px;">Tomcat</div>
+                    <div class="skills-legend clearfix">
+                        <div class="legend-left legend">{{skill.content.type1}}</div>
+                        <div class="legend-left legend"><span>{{skill.content.type2}}</span></div>
+                        <div class="legend-right legend"><span>{{skill.content.type3}}</span></div>
+                        <div class="legend-right legend">{{skill.content.type4}}</div>
+                    </div>
                 </div>
-                <div class="title only pull-right">{{contact.content.phone}}</div>
-			  </div>
-			  <div class="contact-item">
-                <div class="icon pull-left text-center">
-				  <img src="picture/mail.png"></img>
+            </div>
+            <!-- blog -->
+            <div class="box">
+                <h2>{{blog.title}}</h2>
+
+                <div>
+                    <button type="button" class="btn btn-primary" onclick="goto_blog()">Go To View My Blog</button>
                 </div>
-                <div class="title only pull-right">{{contact.content.email}}</div>
-			  </div>
-			  <div class="contact-item">
-                <div class="icon pull-left text-center">
-				  <img src="picture/message.png"></img>
+            </div>
+            <!-- github -->
+            <div class="box">
+                <h2>{{github.title}}</h2>
+
+                <div>
+                    <button type="button" class="btn btn-primary" onclick="goto_github()">Go To View My GitHub</button>
                 </div>
-                <div class="title only pull-right">{{contact.content.wechat}}</div>
-			  </div>
-		    </div>
-		    <!-- skill -->
-		    <div class="box">
-		      <h2>{{skill.title}}</h2>
-		      <div class="skill">
-		        <div class="item-skills" data-percent="0.80" style="width: 366px;">Java</div>
-		        <div class="item-skills" data-percent="0.60" style="width: 274px;">C</div>
-		        <div class="item-skills" data-percent="0.40" style="width: 183px;">Python</div>
-		        <div class="item-skills" data-percent="0.30" style="width: 137px;">Shell</div>
-		        <div class="item-skills" data-percent="0.40" style="width: 183px;">HTML/CSS</div>
-		        <div class="item-skills" data-percent="0.40" style="width: 137px;">JS/JQUERY</div>
-		        <div class="item-skills" data-percent="0.40" style="width: 183px;">MySQL</div>
-		        <div class="item-skills" data-percent="0.40" style="width: 183px;">Oracle</div>
-		        <div class="item-skills" data-percent="0.40" style="width: 183px;">Tomcat</div>
-		        <div class="skills-legend clearfix">
-				  <div class="legend-left legend">{{skill.content.type1}}</div>
-			      <div class="legend-left legend"><span>{{skill.content.type2}}</span></div>
-				  <div class="legend-right legend"><span>{{skill.content.type3}}</span></div>
-				  <div class="legend-right legend">{{skill.content.type4}}</div>
-                </div>
-		      </div>
-		    </div>
-		    <!-- blog -->
-		    <div class="box">
-			  <h2>{{blog.title}}</h2>
-			  <div>
-			    <button type="button" class="btn btn-primary" onclick="goto_blog()">Go To View My Blog</button>
-			  </div>
-		    </div>
-		    <!-- github -->
-		    <div class="box">
-			  <h2>{{github.title}}</h2>
-			  <div>
-			    <button type="button" class="btn btn-primary" onclick="goto_github()">Go To View My GitHub</button>
-			  </div>
-		    </div>
-		  </div>
-		</div>
-	  </div>
-    <script src="js/jquery-1.8.3.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/handlebars-v3.0.3.js"></script>
-    <script type="text/javascript">
-		function goto_blog()
-		{
-			window.location.href = 'blog.html';
-		}
-		
-		function goto_github()
-		{
-			window.location.href = 'https://github.com/xujianguo';
-		}
-		
-		$(function() {
-            $.getJSON("data/resume.json", function(result) {
-					var source   = $("#template-json").html();
-					var template = Handlebars.compile(source);
-					var html    = template(result);
-					$("#template-json").html(html);
-			});
-		});
-		
-	</script>
-  </body>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="js/jquery-1.8.3.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/handlebars-v3.0.3.js"></script>
+<script type="text/javascript">
+    function goto_blog() {
+        window.location.href = 'blog.html';
+    }
+
+    function goto_github() {
+        window.location.href = 'https://github.com/xujianguo';
+    }
+
+    $(function () {
+        $.getJSON("data/resume.json", function (result) {
+            var source = $("#template-json").html();
+            var template = Handlebars.compile(source);
+            var html = template(result);
+            $("#template-json").html(html);
+        });
+    });
+
+</script>
+</body>
 </html>
 
