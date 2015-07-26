@@ -61,7 +61,7 @@
 		{
 			"address" : "blog/oracle/6.html",
 			"title" : "从体系结构上对SQL进行优化",
-			"outlook" : "在Oracle里面有这样的一种机制，Oracle会检查library cache中parse request的次数是否超过3次。 如果一个cursor 被关闭3次，Oracle就认为这个session cursor 需要移动到session cursor cache。 而这个session cursor cache 是保存在SharedPool中的。即对应的cursor 从PGA移动到了SGA......",
+			"outlook" : "摘要：在Oracle里面有这样的一种机制，Oracle会检查library cache中parse request的次数是否超过3次。 如果一个cursor 被关闭3次，Oracle就认为这个session cursor 需要移动到session cursor cache。 而这个session cursor cache 是保存在SharedPool中的。即对应的cursor 从PGA移动到了SGA......",
 		    "time" : "posted @ 2015-06-08 17:32"
 		}
 	],
@@ -78,5 +78,13 @@
 			"outlook" : "摘要：天气很热，很多女生去游泳池游泳，在一个女生专属游泳池中，其中60%是美女，剩下的是肥婆；美女中杯罩为D的概率是20%，肥婆中杯罩为D的概率是80%。此时，有位D杯罩的女生游上岸，是美女的几率大还是肥婆的几率大呢......",
 			"time" : "posted @ 2015-06-03 18:56"
 		}
-	]
+	],
+    "php" : [
+        {
+            "address" : "blog/php/1.html",
+            "title" : "PHP架构中的各级负载均衡",
+            "outlook" : "摘要：出现的场景：随着访问量的增加，单个服务点不能快速合理处理用户请求时，需要添加多个服务点分摊压力，通过对服务点的负载均衡，对请求进行分配。概念：将流量分摊到多个操作单元上进行执行，从而共同完成工作......",
+            "time" : "posted @ 2015-07-26 17:36"
+        }
+    ]
 }
