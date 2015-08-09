@@ -29,6 +29,10 @@
     {
       "id": "mysql",
       "content": "MySQL"
+    },
+    {
+      "id": "load_balance",
+      "content": "负载均衡"
     }
   ]
 }
