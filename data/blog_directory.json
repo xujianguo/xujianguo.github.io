@@ -93,6 +93,12 @@
       "title": "开启通用日志，追踪SQL",
       "outlook": "摘要：就是general log，默认是关闭状态，由于general log会记录用户的所有操作，其中包含增删查改等信息，在并发操作大的环境下会产生大量的信息而导致不必要的磁盘IO，会影响MySQL的性能......",
       "time": "posted @ 2015-08-01 17:36"
+    },
+    {
+      "address": "blog/mysql/2.html",
+      "title": "一个用binlog恢复数据的过程",
+      "outlook": "摘要：本文章主要是描述了一个用binlog恢复数据的过程，从数据的建立，到数据的备份，接着数据的丢失，最后数据的恢复......",
+      "time": "posted @ 2015-08-09 22:29"
     }
   ],
   "load_balance": [

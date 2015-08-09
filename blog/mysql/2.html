@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta charset="UTF-8">
+	<title>Blog of Ray Guo</title>
+	<link rel="icon" type="image/x-icon" href="https://assets-cdn.github.com/favicon.ico">
+	<link href="../../css/bootstrap.min.css" rel="stylesheet">
+	<link href="../../css/template.css" rel="stylesheet">
+	<link rel="stylesheet" href="../../highlight/styles/default.css">
+	<script src="../../highlight/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+</head>
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-xs-12">
+				<div id="photo-header" class="text-center">
+					<div id="photo">
+						<img src="../../picture/header.png" alt="avatar"/>
+					</div>
+					<div id="text-header">
+						<h1>
+							HELLO,<br>MY NAME IS <span>XuJianGuo</span> AND THIS IS MY BLOG
+						</h1>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-12 col-sm-9">
+				<div class="template">
+					<h1>一个用binlog恢复数据的过程</h1>
+				</div>
+				
+				<div class="template">
+                    <h2>数据操作</h2>
+					<p><strong>初始化数据库和表</strong></p>
+                    <pre><code class="sql">
+mysql> create database demo;
+Query OK, 1 row affected (0.00 sec)
+
+mysql> use demo;
+Database changed
+mysql> create table t1(id int);
+Query OK, 0 rows affected (0.04 sec)
+
+mysql> show tables;
++----------------+
+| Tables_in_demo |
++----------------+
+| t1             |
++----------------+
+1 row in set (0.00 sec)
+
+mysql> insert into t1(id) values(1);
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select * from t1;
++------+
+| id   |
++------+
+|    1 |
++------+
+1 row in set (0.00 sec)
+                    </code></pre>
+                    <p><strong>查看binlog是否开启</strong></p>
+                    <pre><code class="sql">
+mysql> show variables like 'log_bin';
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| log_bin       | ON    |
++---------------+-------+
+1 row in set (0.00 sec)
+                    </code></pre>
+                    <p><strong>查看binlog的存储路径，并查看当前的日志文件情况</strong></p>
+                    <pre><code class="sql">
+mysql> show variables like 'datadir';
++---------------+-----------------+
+| Variable_name | Value           |
++---------------+-----------------+
+| datadir       | /var/lib/mysql/ |
++---------------+-----------------+
+1 row in set (0.00 sec)
+                    </code></pre>
+                    <img src="../../picture/blog-mysql-2-1.png">
+                    <p>
+                        <strong>
+                            使用mysqdump命令备份demo数据库，l参数代表使用读锁，F参数代表是flush logs，在执行命令后因为flush logs的
+                            原因会生成一个新的binlog文件，在这里是mysql-bin.000041
+                        </strong>
+                    </p>
+                    <pre><code class="sql">
+[root@ mysql]# mysqldump -u root -p demo -l -F > demo.sql
+Enter password:
+                    </code></pre>
+                    <p><strong>插入新的数据进去</strong></p>
+                    <pre><code class="sql">
+mysql> use demo;
+Database changed
+mysql> insert into t1(id) values(2);
+Query OK, 1 row affected (0.00 sec)
+
+mysql> insert into t1(id) values(3);
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select * from t1;
++------+
+| id   |
++------+
+|    1 |
+|    2 |
+|    3 |
++------+
+3 rows in set (0.00 sec)
+                    </code></pre>
+                    <p><strong>因为人为的错误操作，执行如下的sql，删除了数据</strong></p>
+                    <pre><code class="sql">
+mysql> truncate table t1;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> show tables;
++----------------+
+| Tables_in_demo |
++----------------+
+| t1             |
++----------------+
+1 row in set (0.00 sec)
+
+mysql> select * from t1;
+Empty set (0.00 sec)
+
+mysql> drop table t1;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> show tables;
+Empty set (0.00 sec)
+                    </code></pre>
+                </div>
+
+                <div class="template">
+                    <h2>数据恢复</h2>
+                    <p>现在需要将数据恢复到删除前</p>
+                    <p><strong>使用之前备份的demo.sql导入数据库</strong></p>
+                    <pre><code class="sql">
+[root@ mysql]# mysql -u root -p demo < demo.sql
+Enter password:
+[root@ mysql]# mysql -u root -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 16
+Server version: 5.1.73-log Source distribution
+
+Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> use demo;
+Database changed
+mysql> select * from t1;
++------+
+| id   |
++------+
+|    1 |
++------+
+1 row in set (0.00 sec)
+                    </code></pre>
+                    <p>在导入demo.sql后，我我们只是恢复了一部分的数据，没有完全恢复到删除前</p>
+                    <p><strong>查看binlog日志</strong></p>
+                    <pre><code class="sql">
+[root@ mysql]# mysqlbinlog mysql-bin.000041|more
+'/*!*/;
+# at 106
+#150809 21:42:45 server id 1  end_log_pos 197   Query   thread_id=14    exec_time=0     error_code=0
+use `demo`/*!*/;
+SET TIMESTAMP=1439127765/*!*/;
+SET @@session.pseudo_thread_id=14/*!*/;
+SET @@session.foreign_key_checks=1, @@session.sql_auto_is_null=1, @@session.unique_checks=1, @@session.autocommit=1/*!*/;
+SET @@session.sql_mode=0/*!*/;
+SET @@session.auto_increment_increment=1, @@session.auto_increment_offset=1/*!*/;
+/*!\C latin1 *//*!*/;
+SET @@session.character_set_client=8,@@session.collation_connection=8,@@session.collation_server=8/*!*/;
+SET @@session.lc_time_names=0/*!*/;
+SET @@session.collation_database=DEFAULT/*!*/;
+insert into t1(id) values(2)
+/*!*/;
+# at 197
+#150809 21:42:49 server id 1  end_log_pos 288   Query   thread_id=14    exec_time=0     error_code=0
+SET TIMESTAMP=1439127769/*!*/;
+insert into t1(id) values(3)
+/*!*/;
+# at 288
+#150809 21:47:39 server id 1  end_log_pos 368   Query   thread_id=14    exec_time=0     error_code=0
+SET TIMESTAMP=1439128059/*!*/;
+truncate table t1
+/*!*/;
+                    </code></pre>
+                    <p><strong>在binlog中找到事件的起始点，然后用mysqlbinlog恢复</strong></p>
+                    <pre><code class="sql">
+[root@ mysql]# mysqlbinlog --start-position='106' --stop-position='288' mysql-bin.000041 | mysql -u root -p demo
+Enter password:
+[root@ mysql]# mysql -u root -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 19
+Server version: 5.1.73-log Source distribution
+
+Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> use demo;
+Database changed
+mysql> select * from t1;
++------+
+| id   |
++------+
+|    1 |
+|    2 |
+|    3 |
++------+
+3 rows in set (0.00 sec)
+                    </code></pre>
+                    <p><strong>至此，恢复数据成功</strong></p>
+                </div>
+
+			</div>
+
+			<div class="col-xs-12 col-sm-3">
+				<div id="template-json" class="box clearfix">
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../js/jquery-1.8.3.js"></script>
+	<script src="../../js/bootstrap.min.js"></script>
+	<script src="../../js/handlebars-v3.0.3.js"></script>
+	<script src="../../js/show_directory.js"></script>
+</body>
+</html>
