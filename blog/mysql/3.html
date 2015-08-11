@@ -35,7 +35,7 @@
 				<div class="template">
                     <h2>创建用户</h2>
                     <p>
-                        这个用户的使用者是salve服务器，然而是在master服务器端创建，salve服务器通过这个用户远程登录到master服务器，
+                        这个用户的使用者是slave服务器，然而是在master服务器端创建，slave服务器通过这个用户远程登录到master服务器，
                         网络IO binlog到本地上，在执行binlog实现数据的同步。
                     </p>
                     <pre><code class="sql">
@@ -52,7 +52,232 @@ mysql> select user, password, host from mysql.user where user like 'slave%';
                     </code></pre>
                 </div>
 
+                <div class="template">
+                    <h2>master服务器配置</h2>
+                    <p>
+                        <strong>更改my.cnf配置：</strong>
+                        在master服务器上，我们需要设置两个地方：
+                    </p>
+                    <ol>
+                        <li>设置server-id，这个设置标识了主从架构中的一台服务器，不可重复，这里我们设置master服务器的server-id为1</li>
+                        <li>开启binlog，主从架构基于binlog实现，所以binlog要开启。</li>
+                    </ol>
+                    <pre><code class="sql">
+[root@ ~]# cat /etc/my.cnf|grep -n "\(^server-id\|^log-bin\)"
+50:log-bin=mysql-bin
+58:server-id    = 1
+                    </code></pre>
+                    <p>
+                        <strong>重置binlog日志：</strong>
+                        目的是让binlog日志重新计数，方便slave的主从复制
+                    </p>
+                    <pre><code class="sql">
+mysql> reset master;
+Query OK, 0 rows affected (0.01 sec)
 
+mysql> show master status;
++------------------+----------+--------------+------------------+
+| File             | Position | Binlog_Do_DB | Binlog_Ignore_DB |
++------------------+----------+--------------+------------------+
+| mysql-bin.000001 |      106 |              |                  |
++------------------+----------+--------------+------------------+
+1 row in set (0.00 sec)
+                    </code></pre>
+                    <p>
+                        让这里可以看到binlog已经从最开始计数了
+                    </p>
+                    <p>
+                        <strong>备份要同步的数据库：</strong>
+                        使用mysqldump命令备份需要在主从架构在进行同步的数据库
+                    </p>
+                    <pre><code class="sql">
+[root@ mysql]# mysqldump -u root -p demo -l -F > demo.sql
+Enter password:
+[root@ mysql]# ll demo.sql
+-rw-r--r-- 1 root root 1782 Aug 11 21:22 demo.sql
+                    </code></pre>
+                    <p>
+                        <strong>将需要备份的sql传送到slave中：</strong>
+                        通过scp命令将sql文件传送给slave服务器，slave通过执行这个sql达到基础数据的同步
+                    </p>
+                    <pre><code class="sql">
+[root@ mysql]# scp -P 43999 demo.sql 192.168.137.223:/var/lib/mysql/
+root@192.168.137.223's password:
+demo.sql                                100% 1782     1.7KB/s   00:00
+                    </code></pre>
+                </div>
+
+                <div class="template">
+                    <h2>slave服务器配置</h2>
+                    <p>
+                        <strong>重置binlog日志：</strong>
+                        跟服务器一样，通过重置日志消除之前的旧日志
+                    </p>
+                    <pre><code class="sql">
+mysql> show master status;
++------------------+----------+--------------+------------------+
+| File             | Position | Binlog_Do_DB | Binlog_Ignore_DB |
++------------------+----------+--------------+------------------+
+| mysql-bin.000032 |      106 |              |                  |
++------------------+----------+--------------+------------------+
+1 row in set (0.00 sec)
+
+mysql> reset master;
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> show master status;
++------------------+----------+--------------+------------------+
+| File             | Position | Binlog_Do_DB | Binlog_Ignore_DB |
++------------------+----------+--------------+------------------+
+| mysql-bin.000001 |      106 |              |                  |
++------------------+----------+--------------+------------------+
+1 row in set (0.00 sec)
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| php_db             |
++--------------------+
+3 rows in set (0.04 sec)
+                    </code></pre>
+                    <p>
+                        <strong>将master传过来的sql导入数据库中</strong>
+                    </p>
+                    <pre><code class="sql">
+[root@ mysql]# mysql -u root -p demo < demo.sql
+Enter password:
+                    </code></pre>
+                    <p>
+                        <strong>更改my.cnf配置：</strong>
+                        主要有下面几个修改点：
+                    </p>
+                    <ol>
+                        <li>开启binlog日志</li>
+                        <li>server-id设置为2，只是不跟master重复就好了</li>
+                        <li>设置master-host为master的ip地址</li>
+                        <li>设置master-user为新建的用户</li>
+                        <li>设置master-password为新建用户的密码</li>
+                        <li>设置master-port为master服务器的服务端口</li>
+                    </ol>
+                    <pre><code class="sql">
+[root@ mysql]# cat /etc/my.cnf|grep -n "\(^server-id\|^log-bin\|^master-*\)"
+50:log-bin=mysql-bin
+58:server-id    = 2
+98:master-host     =   192.168.137.222
+102:master-user     =   slave
+106:master-password =   slave
+110:master-port     =  3306
+                    </code></pre>
+                    <p>
+                        <strong>重启slave的MySQL服务</strong>
+                    </p>
+                    <pre><code class="sql">
+[root@ mysql]# service mysqld restart
+Stopping mysqld:                                           [  OK  ]
+Starting mysqld:                                           [  OK  ]
+                    </code></pre>
+                </div>
+
+                <div class="template">
+                    <h2>测试是否配置成功</h2>
+                    <p>
+                        <strong>在slave服务器通过show slave status\G命令查看slave的状态：</strong>
+                        如果Slave_IO_Running和Slave_SQL_Running都是YES的话，证明成功配置了，Slave_IO_Running说明的是IO binlog成功，
+                        Slave_SQL_Running说明的是SQL执行成功。
+                    </p>
+                    <pre><code class="sql">
+mysql> show slave status\G;
+*************************** 1. row ***************************
+Slave_IO_State: Waiting for master to send event
+Master_Host: 192.168.137.222
+Master_User: slave
+Master_Port: 3306
+Connect_Retry: 60
+Master_Log_File: mysql-bin.000003
+Read_Master_Log_Pos: 106
+Relay_Log_File: mysqld-relay-bin.000005
+Relay_Log_Pos: 251
+Relay_Master_Log_File: mysql-bin.000003
+Slave_IO_Running: Yes
+Slave_SQL_Running: Yes
+Replicate_Do_DB:
+Replicate_Ignore_DB:
+Replicate_Do_Table:
+Replicate_Ignore_Table:
+Replicate_Wild_Do_Table:
+Replicate_Wild_Ignore_Table:
+Last_Errno: 0
+Last_Error:
+Skip_Counter: 0
+Exec_Master_Log_Pos: 106
+Relay_Log_Space: 678
+Until_Condition: None
+Until_Log_File:
+Until_Log_Pos: 0
+Master_SSL_Allowed: No
+Master_SSL_CA_File:
+Master_SSL_CA_Path:
+Master_SSL_Cert:
+Master_SSL_Cipher:
+Master_SSL_Key:
+Seconds_Behind_Master: 0
+Master_SSL_Verify_Server_Cert: No
+Last_IO_Errno: 0
+Last_IO_Error:
+Last_SQL_Errno: 0
+Last_SQL_Error:
+1 row in set (0.00 sec)
+                    </code></pre>
+                    <p>
+                        <strong>在master服务器执行insert语句</strong>
+                    </p>
+                    <pre><code class="sql">
+mysql> select * from t1;
++------+
+| id   |
++------+
+|    1 |
+|    2 |
+|    3 |
++------+
+3 rows in set (0.00 sec)
+
+mysql> insert into t1(id) values(666);
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select * from t1;
++------+
+| id   |
++------+
+|    1 |
+|    2 |
+|    3 |
+|  666 |
++------+
+4 rows in set (0.00 sec)
+                    </code></pre>
+                    <p>
+                        <strong>在slave服务器执行select语句</strong>
+                    </p>
+                    <pre><code class="sql">
+mysql> use demo;
+Database changed
+mysql> select * from t1;
++------+
+| id   |
++------+
+|    1 |
+|    2 |
+|    3 |
+|  666 |
++------+
+4 rows in set (0.00 sec)
+                    </code></pre>
+                    <p><strong>至此，主从配置完成</strong></p>
+                </div>
 
 			</div>
 
