@@ -105,6 +105,12 @@
       "title": "主从架构的配置",
       "outlook": "摘要：这个用户的使用者是slave服务器，然而是在master服务器端创建，slave服务器通过这个用户远程登录到master服务器，网络IO binlog到本地上，在执行binlog实现数据的同步",
       "time": "posted @ 2015-08-10 20:12"
+    },
+    {
+      "address": "blog/mysql/4.html",
+      "title": "导入SQL文件错误的处理",
+      "outlook": "摘要：使用mysqldump命令备份test数据库下面的user表，导入SQL的时候发现错误，通过tail命令和head命令定位到上面错误的line，从这条语句看很明显了标签少了一个反引号......",
+      "time": "posted @ 2015-08-14 23:12"
     }
   ],
   "load_balance": [
