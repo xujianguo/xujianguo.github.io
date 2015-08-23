@@ -31,6 +31,12 @@
       "title": "同步器四大金刚",
       "outlook": "摘要：我们尝试用CountDownLatchDemo的例子对源码的流程进行讲解：用size去初始化counter。size在CountDownLatch最终会变成state变量的值，然后countDown方法去做减法，state的值在减到0之后就不变了,main线程调用await方法。main线程调用await方法实际上是调用sync的acquireSharedInterruptibly方法，acquireSharedInterruptibly里面主要是tryAcquireShared，这个方法的意思很简单，即使state变量为0了没......",
       "time": "posted @ 2015-05-28 21:30"
+    },
+    {
+      "address": "blog/java/6.html",
+      "title": "找到IO消耗大的Java程序，并分析之",
+      "outlook": "摘要：这个程序的思想就是根据当前运行有多少个主机就开启多少个线程，线程的执行任务是往文件中写入指定的内容，不间断，这样必然会消耗很多CPU资源和产生很多IO消耗。......",
+      "time": "posted @ 2015-08-23 20:45"
     }
   ],
   "oracle": [

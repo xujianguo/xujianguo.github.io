@@ -50,6 +50,18 @@ function getQueryString(name) {
 	if (r != null) 
 		return unescape(r[2]); 
 	return null; 
-} 
+}
+
+$(function() {
+    $('head').append('<link href="../../css/lightbox.css" rel="stylesheet">');
+    $('body').append('<script src="../../js/jquery.lightbox.js"></script>');
+});
+
+$(function() {
+    $('img').lightbox({
+        fileLoadingImage : '../../picture/loading.gif',
+        fileBottomNavCloseImage: '../../picture/closelabel.gif'
+    });
+});
 
 
