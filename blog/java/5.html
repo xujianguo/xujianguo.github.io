@@ -178,6 +178,88 @@ public class CharIO {
                 </code></pre>
             </div>
 
+            <div class="template">
+                <h2>基于NIO的IO操作</h2>
+                <p>什么都不说，先看看NIO的读写方式</p>
+                <pre><code class="java">
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+
+import org.junit.Test;
+
+public class NIO {
+    //文件地址，相对于项目路径下
+    private String path = "file/demo.txt";
+
+    @Test
+    public void read() throws Exception {
+        FileChannel channel = new FileInputStream(new File(path)).getChannel();
+        MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+        Charset charset = Charset.forName("UTF8");
+        CharBuffer content = charset.decode(buffer);
+        System.out.println(content);
+        channel.close();
+    }
+
+    @Test
+    public void write() throws Exception {
+        FileChannel channel = new FileOutputStream(new File(path)).getChannel();
+        CharBuffer buffer = CharBuffer.allocate(6);
+        buffer.put("广东工业大学".toCharArray());
+        buffer.flip();
+        Charset charset = Charset.forName("UTF8");
+        ByteBuffer content = charset.encode(buffer);
+        System.out.println(content);
+        channel.write(content);
+    }
+}
+                </code></pre>
+                <p>
+                    <strong>Buffer：</strong>
+                    Buffer在NIO系列中扮演的角色就是数据的存储容器，这个Buffer有一种新的设计方式，就是支持可读可写的操作，可复用，
+                    大大提高资源的利用性。与传统的BIO对比，Buffer具有数据存储的可操作性，对于BIO，我们读取的数据存在实际类的byte数组中，
+                    只能按序读，而Buffer提供给开发者更多的可操作性。从另外一个角度说，Buffer的出现其实是NIO的特性所趋，NIO就是非阻塞，
+                    非阻塞的原理就是将文件映射到内存中进行操作，这样就不是一直去IO磁盘了，Buffer就是文件在内存中的提现。
+                </p>
+                <p>
+                    <strong>Channel：</strong>
+                    Channel就是通道的意思，BIO通过InputStream读，OutputStream写，Channel就是NIO的读写工具，我是这样看待Channel的，
+                    Channel其实就是一个连接Buffer和文件的桥梁，从Buffer读数据到文件中，从文件读数据写到Buffer中给开发者使用，Channel的
+                    底层就是封装了一系列对Buffer的操作，是文件IO的操作。
+                </p>
+                <p>
+                    <strong>Charset：</strong>
+                    一般我们在开发层操作的是字符，但是在底层操作的是字节，所以就需用Charset这个类来限制转换。
+                </p>
+                <p>
+                    <strong>文件锁：</strong>
+                    文件锁是NIO中的一个特性，因为在多个线程同时访问文件的时候，为了保证文件操作的正确性，必须加锁控制，文件锁的出现是为了更加方便使用。下面
+                    是使用的例子：
+                </p>
+                <pre><code class="java">
+@Test
+public void lockFile() throws Exception {
+    FileChannel channel = new FileOutputStream(new File(path)).getChannel();
+    FileLock lock = channel.tryLock();
+    Thread.sleep(5000);
+    lock.release();
+}
+                </code></pre>
+            </div>
+
+            <div class="template">
+                <h2>Socket IO</h2>
+                <p>Socket的IO我们放在后面的文章中详述</p>
+            </div>
+
+
+
         </div>
 
         <div class="col-xs-12 col-sm-3">
