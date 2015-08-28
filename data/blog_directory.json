@@ -123,6 +123,12 @@
       "title": "导入SQL文件错误的处理",
       "outlook": "摘要：使用mysqldump命令备份test数据库下面的user表，导入SQL的时候发现错误，通过tail命令和head命令定位到上面错误的line，从这条语句看很明显了标签少了一个反引号......",
       "time": "posted @ 2015-08-14 23:12"
+    },
+    {
+      "address": "blog/mysql/5.html",
+      "title": "磁盘空间不足导致MySQL无法启动",
+      "outlook": "摘要：从下面的ErrorLog当中可以发现Disk is full，就是磁盘满了。磁盘满了，为什么磁盘满了会影响MySQL呢？在MySQL运行的时候会进行很多操作的记录，如general log，error log......",
+      "time": "posted @ 2015-08-28 23:20"
     }
   ],
   "load_balance": [
