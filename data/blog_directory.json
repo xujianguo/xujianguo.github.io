@@ -129,7 +129,13 @@
       "title": "磁盘空间不足导致MySQL无法启动",
       "outlook": "摘要：从下面的ErrorLog当中可以发现Disk is full，就是磁盘满了。磁盘满了，为什么磁盘满了会影响MySQL呢？在MySQL运行的时候会进行很多操作的记录，如general log，error log......",
       "time": "posted @ 2015-08-28 23:20"
-    }
+    }, 
+	{
+	  "address": "blog/mysql/6.html",
+	  "title": "MyISAM/InnoDB/Memory引擎的比较",
+	  "outlook": "MySQL对比其他数据库很不同的一点是插件式的存储引擎，用户可以根据自己实际的业务需求选择合适的引擎去存储数据，要想了解怎么选取合适的引擎，首先得知道他们之间各有什么不同，下面我们从几个方面探讨一下......",
+	  "time": "posted $ 2015-09-06"
+	}
   ],
   "load_balance": [
     {
