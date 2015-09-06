@@ -201,7 +201,7 @@ Writing superblocks and filesystem accounting information: done
 This filesystem will be automatically checked every 37 mounts or
 180 days, whichever comes first.  Use tune2fs -c or -i to override.
 				</code></pre>
-				<p>最后创建一个新的目录，将新磁盘挂载到指定目录中</p>
+				<p>创建一个新的目录，将新磁盘挂载到指定目录中</p>
 				<pre><code>
 [root@ ~]# cd /
 [root@ /]# mkdir disk2
@@ -214,6 +214,7 @@ tmpfs                 499M     0  499M   0% /dev/shm
 /dev/sda5              13G  161M   12G   2% /data
 /dev/sdb              3.0G   69M  2.8G   3% /disk2
 				</code></pre>
+				<p>最后设置自动挂载，将/dev/sdb1 /disk2 ext4 defaults 0 1写入到/etc/fstab文件中。</p>
 			</div>
 	    <div>
 	    </div>
