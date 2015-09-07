@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta charset="UTF-8">
+	<title>Blog of Ray Guo</title>
+	<link rel="icon" type="image/x-icon" href="https://assets-cdn.github.com/favicon.ico">
+	<link href="../../css/bootstrap.min.css" rel="stylesheet">
+	<link href="../../css/template.css" rel="stylesheet">
+	<link rel="stylesheet" href="../../highlight/styles/default.css">
+	<script src="../../highlight/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+</head>
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-xs-12">
+				<div id="photo-header" class="text-center">
+					<div id="photo">
+						<img src="../../picture/header.png" alt="avatar"/>
+					</div>
+					<div id="text-header">
+						<h1>
+							HELLO,<br>MY NAME IS <span>XuJianGuo</span> AND THIS IS MY BLOG
+						</h1>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-12 col-sm-9">
+				<div class="template">
+					<h1>MySQL分区实战</h1>
+				</div>
+
+				<div class="template">
+					<h2>前瞻</h2>
+					<p>
+						MySQL分区是指按照一定的规则，把一个表分解成多个更小的/更容易管理的部分，对我们来表操作的可能只是表，但是实际上
+						可能只是某个分区而已，这样就减少了不必要的数据的选择。
+					</p>
+				</div>
+
+				<div class="template">
+					<h2>查看版本支持</h2>
+					<p>
+						旧的MySQL版本是不支持分区的，从MySQL5.1开始才支持分区特性，我们可以通过下面的命令查看是否支持分区特性：
+					</p>
+					<pre><code class="sql">
+mysql> show variables like '%partition%';
++-------------------+-------+
+| Variable_name     | Value |
++-------------------+-------+
+| have_partitioning | YES   |
++-------------------+-------+
+1 row in set (0.01 sec)
+					</code></pre>
+				</div>
+
+				<div class="template">
+					<h2>分区表的创建</h2>
+					<p>
+						分区表的创建只是需要在创建普通表的基础上，使用partiton by关键字创建，然后接分区的类型，有range分区，
+						hash分区，list分区，key分区，这些类型我们后面再来做分析，中间的括号是我们要针对分区的字段，这个我针对
+						age属性来分三个区，小于10岁的，小于20岁的，还是其他，分区表的床架还是很简单的，最主要是要选择好分区类型/
+						分区数目/分区字段。
+					</p>
+					<pre><code class="sql">
+mysql> create table `p_test` (
+    -> id int not null,
+    -> name varchar(20),
+    -> age int
+    -> )
+    -> partition by range(age) (
+    -> partition p_age_0 values less than (10),
+    -> partition p_age_1 values less than (20),
+    -> partition p_age_2 values less than MAXVALUE
+    -> );
+					</code></pre>
+				</div>
+
+				<div class="template">
+					<h2>物理存储</h2>
+					<p>
+						对于前面创建的p_test表，我们看看在磁盘上创建了什么文件：
+					</p>
+					<pre><code class="shell">
+[root@ ~]# ll /var/lib/mysql/demo
+total 92
+-rw-rw---- 1 mysql mysql 8616 Aug 23 22:50 course.frm
+-rw-rw---- 1 mysql mysql   84 Aug 23 22:51 course.MYD
+-rw-rw---- 1 mysql mysql 2048 Aug 24 00:29 course.MYI
+-rw-rw---- 1 mysql mysql   65 Aug  9 21:21 db.opt
+-rw-rw---- 1 mysql mysql 8622 Aug 21 23:00 person.frm
+-rw-rw---- 1 mysql mysql   48 Aug 21 23:02 person.MYD
+-rw-rw---- 1 mysql mysql 2048 Aug 22 00:18 person.MYI
+-rw-rw---- 1 mysql mysql 8614 Sep  7 13:12 p_test.frm
+-rw-rw---- 1 mysql mysql   44 Sep  7 13:12 p_test.par
+-rw-rw---- 1 mysql mysql    0 Sep  7 13:12 p_test#P#p_age_0.MYD
+-rw-rw---- 1 mysql mysql 1024 Sep  7 13:12 p_test#P#p_age_0.MYI
+-rw-rw---- 1 mysql mysql    0 Sep  7 13:12 p_test#P#p_age_1.MYD
+-rw-rw---- 1 mysql mysql 1024 Sep  7 13:12 p_test#P#p_age_1.MYI
+-rw-rw---- 1 mysql mysql    0 Sep  7 13:12 p_test#P#p_age_2.MYD
+-rw-rw---- 1 mysql mysql 1024 Sep  7 13:12 p_test#P#p_age_2.MYI
+-rw-rw---- 1 mysql mysql 8556 Aug  9 21:56 t1.frm
+-rw-rw---- 1 mysql mysql  301 Aug 28 22:11 t1.MYD
+-rw-rw---- 1 mysql mysql 1024 Aug 28 23:14 t1.MYI
+					</code></pre>
+					<p>
+						从上面可以非常直观的看出我们创建的p_test表，也有一个frm定义文件，有这个par分区信息的记录文件，后面
+						的MYD和MYI都是针对每个分区独立的文件，从这里也可以看出了分区的独立性，若都集中在一起，那么数据文件和
+						索引文件的加载每次都是加载全部，这样的效率并不高，这么分开来单独存储是比较合适的一件事。
+					</p>
+				</div>
+
+				<div class="template">
+					<h2>类型</h2>
+					<p>分区的类型总共有下面几种：</p>
+					<p>
+						<strong>Range分区：</strong>
+						利用取值范围将数据进行分区，区间要连续并且不能互相重叠，使用values less than操作符进行分区的定义，如我们可以
+						利用Range分区将表中的数据按照年龄段进行分区。
+					</p>
+					<p>
+						<strong>List分区：</strong>
+						通过建立的离散值列表告诉数据库这个记录应该存放在那个分区中，使用values int操作符进行分区的定义，如我们可以利用
+						List分区将表中的数据按照小学生/中学生/高学生/大学生/研究生/文盲进行学历的分类。
+					</p>
+					<p>
+						<strong>Hash分区：</strong>
+						主要用来分散热点读，确保数据在预先确定个数的分区中尽可能平均分布，通过partitions操作符自定要分多少个区，然后
+						通过指定要分区键，就可以将数据平均哈希到每个区上。
+					</p>
+					<p>
+						<strong>Key分区：</strong>
+						类似Hash分区，只不过是Hash分区允许使用用户定义的表达式，而Key分区需要使用MySQL服务器提供的Hash函数。
+					</p>
+				</div>
+
+				<div class="template">
+					<h2>限制</h2>
+					<p>在分区表的使用当中，存在着几点我认为需要注意的限制：</p>
+					<p>
+						<strong>一个表中最多只能有1024个分区。</strong>
+						MySQL进行表分区数的限制也是有道理的，如果分区数不设限制的话，对于后期的维护会相当吃力，所以
+						设置一个上限，还有情有可原的。
+					</p>
+					<p>
+						<strong>版本与分区表达式。</strong>
+						在MySQL5.1中，分区表达式必须是整数，或者是返回整数的表达式。在MySQL5.5中，可以直接使用列来进行分区。
+					</p>
+					<p>
+						<strong>如果表中有主键或者唯一索引，必须包含分区字段。</strong>
+					</p>
+					<p>
+						<strong>分区表中无法使用外键。</strong>
+					</p>
+				</div>
+
+				<div class="template">
+					<h2>原理</h2>
+					<p>其实在进行无论是select/insert，还是update/delete操作，都会有下面几步：</p>
+					<ol>
+						<li>首先如果MySQL检测到你现在要访问分区表，会先锁住分区所有的底层表。</li>
+						<li>通过分区字段确定要执行的操作是哪个分区。</li>
+						<li>执行对应的crud操作</li>
+					</ol>
+					<p>
+						通过下面这条select语句可以明显看到会先选分区，再执行操作的过程，当然，这也是分区表的优势所在。		
+					</p>
+					<pre><code class="sql">
+mysql> explain partitions select * from `p_test` where age = 22;
++----+-------------+--------+------------+--------+---------------+------+---------+------+------+-------+
+| id | select_type | table  | partitions | type   | possible_keys | key  | key_len | ref  | rows | Extra |
++----+-------------+--------+------------+--------+---------------+------+---------+------+------+-------+
+|  1 | SIMPLE      | p_test | p_age_2    | system | NULL          | NULL | NULL    | NULL |    1 |       |
++----+-------------+--------+------------+--------+---------------+------+---------+------+------+-------+
+1 row in set (0.00 sec)
+					</code></pre>
+				</div>
+
+				<div class="template">
+					<h2>优点</h2>
+					<p>
+						<strong>数据更加容易维护。</strong>
+						对于已经过期获取不需要保存的数据，可以通过删除与这些数据相关的分区来快速删除数据。
+					</p>
+					<p>
+						<strong>优化查询。</strong>
+						当where子句包含分区条件时，可以只扫描一个或者多个分区来提高效率，同时在涉及sum和count
+						这些聚合函数的查询时，可以容易地在每个分区上并行处理，最终汇总所有分区得到的结果。
+					</p>
+					<p>
+						<strong>更大吞吐量。</strong>
+						可以将分区表文件跨多个磁盘来分散数据查询，已获得更大的查询吞吐量。
+					</p>
+				</div>
+				
+			</div>
+
+			<div class="col-xs-12 col-sm-3">
+				<div id="template-json" class="box clearfix">
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../js/jquery-1.8.3.js"></script>
+	<script src="../../js/bootstrap.min.js"></script>
+	<script src="../../js/handlebars-v3.0.3.js"></script>
+	<script src="../../js/show_directory.js"></script>
+</body>
+</html>
